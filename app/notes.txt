@@ -1,0 +1,57 @@
+    Descriptors are all "2902: client characteristic" 00002902-0000-1000-8000-00805f9b34fb
+    (+)services/characteristics(-):
+    +00001800-0000-1000-8000-00805f9b34fb (no descriptors on characteristics) (1800: generic access)
+        -00002a00-0000-1000-8000-00805f9b34fb (2a00: device name)
+            -Value: SM-3D57
+        -00002a01-0000-1000-8000-00805f9b34fb (2a01: appearance)
+            - Value: [0] Unknown
+        -00002a04-0000-1000-8000-00805f9b34fb (2a04: peripheral preferred connection parameters)
+            -Connection Interval: 7.50ms - 30.0ms, Slave latency: 0, Supervision Timeout Multiplier: 25
+
+    +00001801-0000-1000-8000-00805f9b34fb (descriptor) (1801: generic attribute)
+        -00002a05-0000-1000-8000-00805f9b34fb (2a05: service changed, properties: indicate)
+
+    +00020001-574f-4f20-5370-6865726f2121
+        -00020003-574f-4f20-5370-6865726f2121 (write no response)
+        -00020002-574f-4f20-5370-6865726f2121 (notify, write) (descriptor) (set listen on this)
+        -00020004-574f-4f20-5370-6865726f2121 (read only)
+        -00020005-574f-4f20-5370-6865726f2121 (write, write no response) (usetheforce)
+
+
+    +0000180f-0000-1000-8000-00805f9b34fb (180f: battery service)
+        -00002a19-0000-1000-8000-00805f9b34fb (descriptor) (2a19: battery level)
+
+    +00010001-574f-4f20-5370-6865726f2121
+        -00010002-574f-4f20-5370-6865726f2121 (notify, write, write no response) (descriptor)
+        -00010003-574f-4f20-5370-6865726f2121 (notify, write, write no response) (descriptor)
+
+
+
+
+
+    found in libCore.so:
+
+    00010001-574f-4f20-5370-6865726f2121
+    00010001-574f-4f20-5370-6865726f2121
+    00010001-574f-4f20-5370-6865726f2121
+
+    00010002-574f-4f20-5370-6865726f2121
+    00010003-574f-4f20-5370-6865726f2121
+
+    22bb746f-2ba0-7554-2d6f-726568705327 (original sphero?)
+    22bb746f-2bbd-7554-2d6f-726568705327 " "
+    22bb746f-2bb2-7554-2d6f-726568705327 " "
+    22bb746f-2bbf-7554-2d6f-726568705327 " "
+    22bb746f-2bb0-7554-2d6f-726568705327 " "
+
+    from gobot: (for Ollie, Sphero & SPRK)
+	// bluetooth service IDs
+	spheroBLEService    = "22bb746f-2bb0-7554-2d6f-726568705327"
+	robotControlService = "22bb746f-2ba0-7554-2d6f-726568705327"
+
+	// BLE characteristic IDs
+	wakeCharacteristic     = "22bb746f-2bbf-7554-2d6f-726568705327"
+	txPowerCharacteristic  = "22bb746f-2bb2-7554-2d6f-726568705327"
+	antiDosCharacteristic  = "22bb746f-2bbd-7554-2d6f-726568705327"
+	commandsCharacteristic = "22bb746f-2ba1-7554-2d6f-726568705327"
+	responseCharacteristic = "22bb746f-2ba6-7554-2d6f-726568705327"

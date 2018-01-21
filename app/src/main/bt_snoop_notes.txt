@@ -1,0 +1,82 @@
+wirehsark filter: bluetooth.addr==e5:67:61:ba:3d:57
+wireshark writes connect only:
+        Service UUID: 00020001-574f-4f20-5370-6865726f2121
+        UUID: 00020002-574f-4f20-5370-6865726f2121 (no value?)
+
+        Service UUID: 00010001-574f-4f20-5370-6865726f2121
+        UUID: 00010002-574f-4f20-5370-6865726f2121 Value: 757365746865666f7263652e2e2e62616e64 (usetheforceband)
+
+        UUID: 00010002574f4f2053706865726f2121
+        Value: 8d0a130d00d5d8 +
+        Value: 8d0a130d00d5d8
+        Value: 8d0a110002e2d8
+        Value: 8d0a1a0e04000100c8d8
+        Value: 8d0a110605d9d8
+        Value: 8d0a131006ccd8
+        Value: 8d0a130407d7d8
+        Value: 8d0a131e08bcd8
+        Value: 8d0a110609d5d8
+        Value: 8d0a1f270aa5d8
+        Value: 8d0a11120bc7d8
+        Value: 8d0a11280cb0d8
+        Value: 8d0a131e0db7d8
+        Value: 8d0a131e0eb6d8
+        Value: 8d0a13100fc3d8
+        Value: 8d0a130410ced8
+        Value: 8d0a130111d0d8
+        Value: 8d0a130112cfd8
+
+
+01/20/18:
+    (write to the descriptor, set notify for this characteristic)
+    Service UUID: 00020001574f4f2053706865726f2121
+    Characteristic UUID: 00020002574f4f2053706865726f2121
+    UUID: Client Characteristic Configuration (0x2902)
+    Characteristic Configuration Client: 0x0001, Notification
+    0000 0000 0000 00.. = Reseved: 0x0000
+    .... .... .... ..0. = Indication: False
+    .... .... .... ...1 = Notification: True
+
+    (write to this characteristic)
+    Service UUID: 00010001574f4f2053706865726f2121
+    UUID: 00010002574f4f2053706865726f2121
+    Value:  8d0a130d00d5d8
+            8d0a130d01d4d8
+            8d0a1a0e03000100c9d8
+            8d0a110604dad8
+            8d0a131005cdd8
+            8d0a130406ab50d8
+            8d0a131e07bdd8
+            8d0a110008dcd8
+            8d0a131e09bbd8
+            8d0a131e0abad8
+            8d0a11060bd3d8
+            8d0a1f270ca3d8
+            8d0a11120dc5d8
+            8d0a11280eaed8
+            8d0a13100fc3d8
+            8d0a130410ced8
+            8d0a1a0e110001ffbcd8
+            8d0a160713000162045ed8
+            8d0a1a0e14000100b8d8
+            8d0a160615c4d8
+            8d0a130417c7d8
+
+    (every value starts with 8d0a, and ends in d8)
+
+01/21/18:
+sphero_btsnoop_connect_aim.log:
+    the very first thing that happens is sending the usetheforce packet to 0x15 (00020001 service, 00020005 characteristic)
+    1 (packet #63)  read request to 0x13 (00020001 service, 00020004 characteristic)
+    1 (packet #65)  write command to 0x1d (register for notifications on 0x1c)
+    32 write requests to handle 0x1c
+    32 write responses
+    280 handle value notifications
+
+201801-edu-connect-aim.log:
+    interesting data begins at packet # 3383 (this apparently turns the rear led on)
+    4 write requests to 0x1c
+    packet 3389: WRITE Value: 8d 0a 13 04 15 c9 d8
+    packet 3399: WRITE Value: 8d 0a 13 03 16 c9 d8
+    packet 3413: WRITE Value: 8d 0a 1a 0e 17 00 01 ff b6 d8
+    packet 3423: WRITE Value: 8d 0a 1a 0e 18 00 0e 00 00 00 a7 d8
