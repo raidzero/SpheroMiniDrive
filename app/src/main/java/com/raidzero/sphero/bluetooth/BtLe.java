@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.util.Log;
 
+import java.lang.reflect.Field;
 import java.util.UUID;
 
 /**
@@ -25,6 +26,7 @@ public class BtLe {
 
     private boolean mServicesDiscovered;
     private boolean mConnected;
+    private boolean mDeviceBusy;
 
     BtLeListener mListener;
     public interface BtLeListener {
@@ -64,6 +66,10 @@ public class BtLe {
         return false;
     }
 
+    boolean queryServiceCharacteristic(SpheroCommand command) {
+        return queryServiceCharacteristic(command.service, command.characteristic);
+    }
+
     boolean subscribeForNotifications(UUID service, UUID characteristic) {
         if (mServicesDiscovered) {
             BluetoothGattService s = mGatt.getService(service);
@@ -95,6 +101,10 @@ public class BtLe {
         return false;
     }
 
+    boolean subscribeForNotifications(SpheroCommand command) {
+        return subscribeForNotifications(command.service, command.characteristic);
+    }
+
     public boolean writeToServiceCharacteristic(UUID service, UUID characteristic, byte[] data) {
         if (mServicesDiscovered) {
             BluetoothGattService s = mGatt.getService(service);
@@ -110,14 +120,20 @@ public class BtLe {
             }
 
             c.setValue(data);
-            return mGatt.writeCharacteristic(c);
+
+            Log.d(TAG, "writeToServiceCharacteristic(): " + service + ": " + characteristic);
+
+            boolean success = mGatt.writeCharacteristic(c);
+
+            Log.d(TAG, "success: " + success);
+            return success;
         }
 
         return false;
     }
 
     public boolean writeToServiceCharacteristic(SpheroCommand command) {
-        return writeToServiceCharacteristic(command.service, command.chracteristic, command.data);
+        return writeToServiceCharacteristic(command.service, command.characteristic, command.data);
     }
 
     public void disconnect() {
@@ -126,6 +142,16 @@ public class BtLe {
         mGatt = null;
     }
 
+    public boolean isDeviceBusy() {
+        // use reflection to read the mDeviceBusy field on the gatt object
+        try {
+            Field f = mGatt.getClass().getDeclaredField("mDeviceBusy");
+            f.setAccessible(true);
+            return (Boolean) f.get(mGatt);
+        } catch (Exception e) {
+            return false;
+        }
+    }
     // Gatt Callback
     private class LeGattCallback extends BluetoothGattCallback {
         @Override
