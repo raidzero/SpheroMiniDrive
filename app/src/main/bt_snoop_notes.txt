@@ -80,3 +80,20 @@ sphero_btsnoop_connect_aim.log:
     packet 3399: WRITE Value: 8d 0a 13 03 16 c9 d8
     packet 3413: WRITE Value: 8d 0a 1a 0e 17 00 01 ff b6 d8
     packet 3423: WRITE Value: 8d 0a 1a 0e 18 00 0e 00 00 00 a7 d8
+
+20180123-*:
+All commands written to 0x1c handle
+    All commands seem to start with 8d 0a, then
+    drive commands seem to be in this format:
+        8d 0a 16 07 ?? ?? 00 ?? d8 (first ?? increments as packets are sent. when it reaches FF an extra 00 byte is inserted before d8)
+    LED color change commands:
+        8d 0a 1a 0e ?? 00 70 ?? ff ?? ?? d8
+    Disconnect:
+        8d 0a 13 01 ?? ?? d8
+        --------------------
+        8d 0a 13 01 69 78 d8
+        8d 0a 13 01 6a 77 d8
+
+        8d 0a 13 01 33 ae d8 (from edu)
+
+
