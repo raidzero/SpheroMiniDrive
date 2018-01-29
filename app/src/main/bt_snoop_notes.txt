@@ -64,6 +64,13 @@ wireshark writes connect only:
 
     (every value starts with 8d0a, and ends in d8)
 
+COMMANDS:
+    MAIN RGB:
+        8d 0a (common with all), 1a 0e (seems to be command), 00 (command number - increments),
+        00 0e, (common with all rgb commands), RR GG BB, then ?? (chec), then d8
+
+        LIGHT UP PREVIOUS COLOR: 8d 0a 1a 0e 03 00 01 00 c9 d8
+
 01/21/18:
 sphero_btsnoop_connect_aim.log:
     the very first thing that happens is sending the usetheforce packet to 0x15 (00020001 service, 00020005 characteristic)
@@ -88,6 +95,7 @@ All commands written to 0x1c handle
         8d 0a 16 07 ?? ?? 00 ?? d8 (first ?? increments as packets are sent. when it reaches FF an extra 00 byte is inserted before d8)
     LED color change commands:
         8d 0a 1a 0e ?? 00 70 ?? ff ?? ?? d8
+        Value: 8d 0a 1a 0e 03 00 01 00 c9 d8 (light previous color?)
     Disconnect:
         8d 0a 13 01 ?? ?? d8
         --------------------
@@ -95,5 +103,100 @@ All commands written to 0x1c handle
         8d 0a 13 01 6a 77 d8
 
         8d 0a 13 01 33 ae d8 (from edu)
+
+20180126-edu-red-green-blue.log: (RGB reg-green-blue, 2s period between)
+All commands written to 0x1c again
+    Value: 8d 0a 16 07 16 00 00 00 04 be d8 (5th byte is command number. starts at 00)
+    Value: 8d 0a 18 13 17 b3 d8
+    Value: 8d 0a 18 00 18 00 32 00 00 07 e0 78 34 d8
+    Value: 8d 0a 18 0c 19 03 80 00 00 35 d8
+    Value: 8d 0a 1a 0e 1a 00 0e ff 00 00 a6 d8 - obviously red
+    Value: 8d 0a 1a 0e 1b 00 0e 00 ff 00 a5 d8 - obviously green
+    Value: 8d 0a 1a 0e 1c 00 0e 00 00 ff a4 d8 - obviously blue
+
+    Observations: main LED RGB commands start with 8d 0a 1a 0e, then
+    {1a, 1b, 1c} (this seems to just increment as commands are sent), 03, then RR GG BB, {a6, a5, a4: checksum?}, then d8
+
+    from mini:
+    Value: 8d 0a 1a 0e 5a 00 70 18 00 ff ec d8
+
+20180128-edu-greengreengreen.log:
+    Value: 8d 0a 1a 0e 1e 00 0e 00 ff 00 a2 d8 (turn green)
+    Value: 8d 0a 1a 0e 1f 00 0e 00 00 00 a0 d8 (turn off)
+    Value: 8d 0a 1a 0e 20 00 0e 00 ff 00 a0 d8 (turn green)
+
+    Value: 8d 0a 1a 0e 21 00 0e 00 00 00 9e d8 (turn off)
+    Value: 8d 0a 1a 0e 22 00 0e 00 ff 00 9e d8 (turn green)
+    ...
+    Value: 8d 0a 1a 0e 2c 00 0f 00 00 85 ca 43 d8 (??)
+
+20180128-mini-*:
+    (connect begins)
+    Value: 8d 0a 13 0d 00 d5 d8
+    Value: 8d 0a 13 0d 01 d4 d8
+    Value: 8d 0a 11 00 02 e2 d8
+    Value: 8d 0a 1a 0e 04 00 01 00 c8 d8
+    Value: 8d 0a 11 06 05 d9 d8
+    Value: 8d 0a 13 10 06 cc d8
+    Value: 8d 0a 13 04 07 d7 d8
+    Value: 8d 0a 13 1e 08 bc d8
+    Value: 8d 0a 11 06 09 d5 d8
+    Value: 8d 0a 1f 27 0a a5 d8
+    Value: 8d 0a 11 12 0b c7 d8
+    Value: 8d 0a 11 28 0c b0 d8
+    Value: 8d 0a 13 1e 0d b7 d8
+    Value: 8d 0a 13 1e 0e b6 d8
+    Value: 8d 0a 13 10 0f c3 d8
+    Value: 8d 0a 13 04 10 ce d8
+    Value: 8d 0a 13 10 11 c1 d8
+    Value: 8d 0a 13 04 12 cc d8
+    (connect ends after packet 1187)
+    Value: 8d 0a 13 10 13 bf d8
+    Value: 8d 0a 13 04 14 ca d8
+    Value: 8d 0a 1a 0e 15 00 01 ff b8 d8 (turn on rear led?)
+    Value: 8d 0a 16 07 17 00 00 00 04 bd d8 (raw motor control?)
+    Value: 8d 0a 16 07 18 00 00 00 04 bc d8
+    Value: 8d 0a 16 07 19 00 00 00 04 bb d8
+    Value: 8d 0a 16 07 1c 00 00 03 04 b5 d8
+    Value: 8d 0a 16 07 1d 00 00 05 04 b2 d8
+    Value: 8d 0a 16 07 20 00 00 0a 04 aa d8
+    Value: 8d 0a 16 07 23 00 00 0d 04 a4 d8
+    Value: 8d 0a 16 07 25 00 00 0e 04 a1 d8
+    Value: 8d 0a 16 07 27 00 00 10 04 9d d8
+    Value: 8d 0a 16 07 2a 00 00 14 04 96 d8
+    Value: 8d 0a 16 07 2c 00 00 17 04 91 d8
+    Value: 8d 0a 16 07 2e 00 00 19 04 ab 05 d8
+    Value: 8d 0a 16 07 30 00 00 1b 04 89 d8
+    Value: 8d 0a 16 07 31 00 00 1c 04 87 d8
+    Value: 8d 0a 16 07 33 00 00 1e 04 83 d8
+    Value: 8d 0a 16 07 36 00 00 1f 04 7f d8
+    Value: 8d 0a 16 07 37 00 00 20 04 7d d8
+    Value: 8d 0a 16 07 3a 00 00 22 04 78 d8
+    Value: 8d 0a 16 07 3d 00 00 25 04 72 d8
+    Value: 8d 0a 16 07 3e 00 00 25 04 71 d8
+    Value: 8d 0a 16 07 41 00 00 27 04 6c d8
+    Value: 8d 0a 16 07 44 00 00 28 04 68 d8
+    Value: 8d 0a 16 07 48 00 00 28 04 64 d8
+    Value: 8d
+    Value: 8d 0a 1a 0e 4b 00 01 00 81 d8 (turn off rear led?)
+    Value: 8d 0a 16 06 4c ab 05 d8
+    (aim ends after packet 1533)
+    Value: 8d 0a 13 10 4d 85 d8
+    Value: 8d 0a 13 04 4e 90 d8
+    Value: 8d 0a 13 10 4f 83 d8
+    Value: 8d 0a 13 04 50 8e d8
+    Value: 8d 0a 16 07 51 00 00 00 00 87 d8
+    Value: 8d 0a 16 07 52 00 00 00 00 86 d8
+    Value: 8d 0a 16 07 54 03 01 26 00 5a d8
+    Value: 8d 0a 16 07 56 06 01 26 00 55 d8
+    Value: 8d 0a 16 07 58 0a 01 2e 00 47 d8
+    Value: 8d 0a 16 07 59 0b 01 2e 00 45 d8
+    Value: 8d 0a 16 07 5b 10 01 2a 00 42 d8
+    (drive ends after packet 1688)
+    Value: 8d 0a 16 07 5c 00 01 2a 00 51 d8
+    Value: 8d 0a 13 01 5d 84 d8
+    Value: 8d 0a 13 01 5e 83 d8
+    (last write command in series)
+
 
 
