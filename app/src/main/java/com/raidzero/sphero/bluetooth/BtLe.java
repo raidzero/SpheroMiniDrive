@@ -16,7 +16,7 @@ import java.util.UUID;
  * Created by raidzero on 1/21/18.
  */
 
-public class BtLeAsync {
+public class BtLe {
     private static final String TAG = "BtLeAsync";
 
     private Context mContext;
@@ -35,7 +35,7 @@ public class BtLeAsync {
         void onCharacteristicRead(BluetoothGattCharacteristic characteristic);
     }
 
-    BtLeAsync(Context context, BluetoothDevice device) {
+    BtLe(Context context, BluetoothDevice device) {
         mContext = context;
         mDevice = device;
         mGatt = mDevice.connectGatt(mContext, true, mGattCallback);
@@ -136,6 +136,11 @@ public class BtLeAsync {
     }
 
     public boolean writeToServiceCharacteristic(BtLeCommand command) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : command.data) {
+            sb.append(String.format("%02X ", b));
+        }
+        Log.d(TAG, "writeData: " + sb.toString());
         return writeToServiceCharacteristic(command.service, command.characteristic, command.data);
     }
 
@@ -177,12 +182,14 @@ public class BtLeAsync {
             } else {
                 mListener.onServicesDiscoveryFail();
             }
+
+            mTxBusy = false;
         }
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-            Log.d(TAG, "onCharacteristicRead()");
+            Log.d(TAG, "onCharacteristicRead(): " + bytesToString(characteristic.getValue()));
             mListener.onCharacteristicRead(characteristic);
             mTxBusy = false;
         }
@@ -190,27 +197,38 @@ public class BtLeAsync {
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
-            Log.d(TAG, "onCharacteristicWrite()");
+            Log.d(TAG, "onCharacteristicWrite(): " + bytesToString(characteristic.getValue()));
             mTxBusy = false;
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-            Log.d(TAG, "onCharacteristicChanged()");
+            Log.d(TAG, "onCharacteristicChanged(): " + bytesToString(characteristic.getValue()));
             mTxBusy = false;
         }
 
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorRead(gatt, descriptor, status);
-            Log.d(TAG, "onDescriptorRead()");
+            Log.d(TAG, "onDescriptorRead(): " + bytesToString(descriptor.getValue()));
+            mTxBusy = false;
         }
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
             Log.d(TAG, "onDescriptorWrite()");
+            mTxBusy = false;
         }
+    }
+
+    public static String bytesToString(byte[] bytes) {
+        StringBuilder builder = new StringBuilder();
+        for (byte b : bytes) {
+            builder.append(String.format("%02X ", b));
+        }
+
+        return builder.toString();
     }
 }

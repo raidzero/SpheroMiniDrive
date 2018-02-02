@@ -132,6 +132,9 @@ All commands written to 0x1c again
 
 20180128-mini-*:
     (connect begins)
+    after use the force
+    and subscribing for notifications
+    a read request is sent to Service UUID: 00020001574f4f2053706865726f2121 / UUID: 00020004574f4f2053706865726f2121
     Value: 8d 0a 13 0d 00 d5 d8
     Value: 8d 0a 13 0d 01 d4 d8
     Value: 8d 0a 11 00 02 e2 d8

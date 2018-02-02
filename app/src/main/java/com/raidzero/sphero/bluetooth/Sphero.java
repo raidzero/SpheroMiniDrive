@@ -6,6 +6,7 @@ import android.content.Context;
 import android.util.Log;
 
 import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,9 +16,9 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Created by posborn on 1/17/18.
  */
 
-public class Sphero implements BtLeAsync.BtLeListener {
+public class Sphero implements BtLe.BtLeListener {
     private static final String TAG = "Sphero";
-    private BtLeAsync mBtLeAsync;
+    private BtLe mBtLe;
     private String mName;
     private boolean mServicesReadyForUse;
 
@@ -27,8 +28,8 @@ public class Sphero implements BtLeAsync.BtLeListener {
 
     public Sphero(Context context, BluetoothDevice device) {
         mName = device.getName();
-        mBtLeAsync = new BtLeAsync(context, device);
-        mBtLeAsync.setListener(this);
+        mBtLe = new BtLe(context, device);
+        mBtLe.setListener(this);
 
         if (!commandExecutor.isShutdown()) {
             commandExecutor.execute(commandProcessor);
@@ -42,7 +43,7 @@ public class Sphero implements BtLeAsync.BtLeListener {
     // send battery level to listener
     public void queryBatteryLevel() {
         // no need to queue this
-        mBtLeAsync.queryServiceCharacteristic(Constants.UUID_SERVICE_BATTERY, Constants.UUID_CHARACTERISTIC_BATTERY);
+        mBtLe.queryServiceCharacteristic(Constants.UUID_SERVICE_BATTERY, Constants.UUID_CHARACTERISTIC_BATTERY);
     }
 
     public void turnOnBackLed() {
@@ -71,22 +72,50 @@ public class Sphero implements BtLeAsync.BtLeListener {
         commandQueue.add(command);
     }
 
+    private void writeCommonOne() {
+        commandQueue.add(BtLeCommand.createWriteCommand(
+                Constants.UUID_SERVICE_COMMAND,
+                Constants.UUID_CHARACTERISTIC_HANDLE_1C,
+                new byte[] { (byte) 0x8d, 0x0a, 0x13, 0x0d, 0x00, (byte) 0xd5, (byte) 0xd8 }
+        ));
+    }
+
     private void mainLedRgb(byte red, byte green, byte blue) {
         Log.d(TAG, "mainLedRgb()");
         commandQueue.add(BtLeCommand.createWriteCommand(
                 Constants.UUID_SERVICE_COMMAND, Constants.UUID_CHARACTERISTIC_HANDLE_1C,
-                new byte[] { (byte) 0x8d, 0x0a, 0x1a, 0x0e, 0x01, 0x00, 0x0e, red, green, blue, (byte) 0xa6, (byte) 0xd8}));
+                SpheroCommand.createRgbCommand(red, green, blue)));
+    }
+
+    private void mainLedOn() {
+        Log.d(TAG, "mainLedOn()");
+        commandQueue.add(BtLeCommand.createWriteCommand(
+                Constants.UUID_SERVICE_COMMAND, Constants.UUID_CHARACTERISTIC_HANDLE_1C,
+                SpheroCommand.createTurnOnLedCommand()));
     }
 
     private void subscribe() {
         Log.d(TAG, "subscribe()");
-        BtLeCommand command = BtLeCommand.createSubscribeCommand(Constants.UUID_SERVICE_COMMAND, Constants.UUID_CHARACTERISTIC_HANDLE_1C);
+        BtLeCommand command = BtLeCommand.createSubscribeCommand(Constants.UUID_SERVICE_INITIALIZE, UUID.fromString("00020002-574f-4f20-5370-6865726f2121"));
 
         commandQueue.add(command);
     }
 
+    private void sendRead() {
+        Log.d(TAG, "sendRead()");
+        commandQueue.add(BtLeCommand.createReadCommand(Constants.UUID_SERVICE_INITIALIZE, UUID.fromString("00020004-574f-4f20-5370-6865726f2121")));
+    }
+
     public void disconnect() {
-        mBtLeAsync.disconnect();
+        // tell sphero to turn off
+        /*
+        Value: 8d 0a 16 07 5c 00 01 2a 00 51 d8
+        Value: 8d 0a 13 01 5d 84 d8
+        Value: 8d 0a 13 01 5e 83 d8
+        */
+
+
+        mBtLe.disconnect();
     }
 
     class CommandProcessor implements Runnable {
@@ -95,41 +124,43 @@ public class Sphero implements BtLeAsync.BtLeListener {
         @Override
         public void run() {
             isRunning = true;
-
+            Log.d(TAG, "starting command processor.");
             try {
                 while (!commandExecutor.isShutdown()) {
                     // grab command off queue
-                    if (commandQueue.size() > 0 && lastCommandSentSuccessfully && !mBtLeAsync.isDeviceBusy()) {
+                    if (commandQueue.size() > 0 && !mBtLe.isDeviceBusy()) {
                         BtLeCommand command = commandQueue.take();
-                        Log.d(TAG, "CommandProcessor sending command to service: " + command.service.toString());
                         switch (command.commandType) {
                             case WRITE_CHARACTERISTIC:
-                                lastCommandSentSuccessfully = mBtLeAsync.writeToServiceCharacteristic(command);
-                                if (!lastCommandSentSuccessfully) {
-                                    Log.d(TAG, "command did not get sent properly: " + command.data.length + " bytes");
-                                } else {
-                                    Log.d(TAG, "command sent properly: " + command.data.length + " bytes");
-                                }
+                                Log.d(TAG, "CommandProcessor sending write request "
+                                        + BtLe.bytesToString(command.data)
+                                        + " to " + command.service + ": "
+                                        + command.characteristic);
+
+                                mBtLe.writeToServiceCharacteristic(command);
                                 break;
                             case READ_CHARACTERISTIC:
-                                lastCommandSentSuccessfully = mBtLeAsync.queryServiceCharacteristic(command);
+                                Log.d(TAG, "CommandProcessor sending read request"
+                                        + " to " + command.service + ": "
+                                        + command.characteristic);
+                                mBtLe.queryServiceCharacteristic(command);
                                 break;
                             case SUBSCRIBE_CHARACTERISTIC_NOTIFICATIONS:
-                                lastCommandSentSuccessfully = mBtLeAsync.subscribeForNotifications(command);
-                                if (!lastCommandSentSuccessfully) {
-                                    Log.d(TAG, "Subscription command fail");
-                                } else {
-                                    Log.d(TAG, "Subscription command success");
-                                }
+                                Log.d(TAG, "CommandProcessor sending subscribe request"
+                                        + " to " + command.service + ": "
+                                        + command.characteristic);
+                                mBtLe.subscribeForNotifications(command);
                                 break;
                         }
                     } else {
                         //Log.d(TAG, "Commands that did not execute: " + commandQueue.size() + ", shutting down processor");
+                        //Log.d(TAG, "out of commands...");
                         //commandExecutor.shutdown();
+
                     }
                 }
             } catch (InterruptedException e) {
-
+                isRunning = false;
             }
         }
     }
@@ -146,7 +177,14 @@ public class Sphero implements BtLeAsync.BtLeListener {
 
         subscribe();
 
-        mainLedRgb((byte) 0x00, (byte) 0xff, (byte) 0x54);
+        sendRead();
+
+        // wake up. turn on led
+        //writeCommonOne();
+
+        //mainLedOn();
+
+        //mainLedRgb((byte) 0xff, (byte) 0xff, (byte) 0x00);
     }
 
     @Override
@@ -160,7 +198,6 @@ public class Sphero implements BtLeAsync.BtLeListener {
             int batteryLevel = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
             Log.d(TAG, (String.format(Locale.US, "Battery level: %d%%", batteryLevel)));
         }
-
         //disconnect();
     }
 }
