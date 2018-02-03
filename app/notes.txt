@@ -22,7 +22,7 @@
         -00002a19-0000-1000-8000-00805f9b34fb (descriptor) (2a19: battery level)
 
     +00010001-574f-4f20-5370-6865726f2121
-        -00010002-574f-4f20-5370-6865726f2121 (notify, write, write no response) (descriptor)
+        -00010002-574f-4f20-5370-6865726f2121 (notify, write, write no response) (descriptor) (set listen on this too)
         -00010003-574f-4f20-5370-6865726f2121 (notify, write, write no response) (descriptor)
 
 

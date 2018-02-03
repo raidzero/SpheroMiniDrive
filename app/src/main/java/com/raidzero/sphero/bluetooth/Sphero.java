@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -34,6 +35,21 @@ public class Sphero implements BtLe.BtLeListener {
         if (!commandExecutor.isShutdown()) {
             commandExecutor.execute(commandProcessor);
         }
+    }
+
+
+    // converts colon-separated string of hex digits (like wireshark gives) to byte array
+    public static byte[] hexStringToBytes(String hexStr) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        String[] hex = hexStr.split(":");
+
+        for (String s : hex) {
+            byte b = (byte) ((Character.digit(s.charAt(0), 16) << 4)
+                    + Character.digit(s.charAt(1), 16));
+            os.write(b);
+        }
+
+        return os.toByteArray();
     }
 
     public String getName() {
@@ -67,33 +83,28 @@ public class Sphero implements BtLe.BtLeListener {
         BtLeCommand command = BtLeCommand.createWriteCommand(
                 Constants.UUID_SERVICE_INITIALIZE,
                 Constants.UUID_CHARACTERISTIC_USETHEFORCE,
-                Constants.USE_THE_FORCE_BYTES);
+                hexStringToBytes(Constants.STR_USE_THE_FORCE_BYTES));
 
         commandQueue.add(command);
     }
 
     private void writeCommonOne() {
-        commandQueue.add(BtLeCommand.createWriteCommand(
-                Constants.UUID_SERVICE_COMMAND,
-                Constants.UUID_CHARACTERISTIC_HANDLE_1C,
-                new byte[] { (byte) 0x8d, 0x0a, 0x13, 0x0d, 0x00, (byte) 0xd5, (byte) 0xd8 }
-        ));
+        commandQueue.add(BtLeCommand.createWriteCommand1c("8d:0a:13:0d:00:d5:d8"));
     }
 
     private void mainLedRgb(byte red, byte green, byte blue) {
         Log.d(TAG, "mainLedRgb()");
-        commandQueue.add(BtLeCommand.createWriteCommand(
-                Constants.UUID_SERVICE_COMMAND, Constants.UUID_CHARACTERISTIC_HANDLE_1C,
-                SpheroCommand.createRgbCommand(red, green, blue)));
+        commandQueue.add(BtLeCommand.createWriteCommand1c(SpheroCommand.createRgbString(red, green, blue)));
     }
 
+    /*
     private void mainLedOn() {
         Log.d(TAG, "mainLedOn()");
         commandQueue.add(BtLeCommand.createWriteCommand(
                 Constants.UUID_SERVICE_COMMAND, Constants.UUID_CHARACTERISTIC_HANDLE_1C,
                 SpheroCommand.createTurnOnLedCommand()));
     }
-
+    */
     private void subscribe() {
         Log.d(TAG, "subscribe()");
         BtLeCommand command = BtLeCommand.createSubscribeCommand(Constants.UUID_SERVICE_INITIALIZE, UUID.fromString("00020002-574f-4f20-5370-6865726f2121"));
@@ -109,13 +120,12 @@ public class Sphero implements BtLe.BtLeListener {
     public void disconnect() {
         // tell sphero to turn off
         /*
-        Value: 8d 0a 16 07 5c 00 01 2a 00 51 d8
+        Value: 8d 0a 16 07 5c 00 01 2a 00 51 d8 // last drive command?
         Value: 8d 0a 13 01 5d 84 d8
         Value: 8d 0a 13 01 5e 83 d8
         */
 
-
-        mBtLe.disconnect();
+        commandQueue.add(BtLeCommand.createWriteCommand1c(SpheroCommand.createDisconnectString()));
     }
 
     class CommandProcessor implements Runnable {
@@ -180,7 +190,9 @@ public class Sphero implements BtLe.BtLeListener {
         sendRead();
 
         // wake up. turn on led
-        //writeCommonOne();
+        writeCommonOne();
+
+        mainLedRgb((byte) 0x00, (byte) 0xff, (byte) 0x00);
 
         //mainLedOn();
 

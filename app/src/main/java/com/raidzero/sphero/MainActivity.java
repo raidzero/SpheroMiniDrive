@@ -41,12 +41,15 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (sphero != null) {
+            sphero.disconnect();
+        }
         sphero = new Sphero(this, adapter.getRemoteDevice("E5:67:61:BA:3D:57"));
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         if (sphero != null) {
             sphero.disconnect();
         }

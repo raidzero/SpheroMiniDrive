@@ -29,6 +29,14 @@ public class BtLeCommand {
         return command;
     }
 
+    public static BtLeCommand createWriteCommand1c(String data) {
+        return BtLeCommand.createWriteCommand(
+                Constants.UUID_SERVICE_COMMAND,
+                Constants.UUID_CHARACTERISTIC_HANDLE_1C,
+                Sphero.hexStringToBytes(data)
+        );
+    }
+
     public static BtLeCommand createSubscribeCommand(UUID service, UUID characteristic) {
         BtLeCommand command = new BtLeCommand();
         command.commandType = CommandType.SUBSCRIBE_CHARACTERISTIC_NOTIFICATIONS;
