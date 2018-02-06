@@ -18,6 +18,7 @@ public class BtLeCommand {
     public UUID characteristic;
     public byte[] data;
     public CommandType commandType;
+    public int duration = 50;
 
     public static BtLeCommand createWriteCommand(UUID service, UUID characteristic, byte[] data) {
         BtLeCommand command = new BtLeCommand();
@@ -29,12 +30,22 @@ public class BtLeCommand {
         return command;
     }
 
+
     public static BtLeCommand createWriteCommand1c(String data) {
         return BtLeCommand.createWriteCommand(
                 Constants.UUID_SERVICE_COMMAND,
                 Constants.UUID_CHARACTERISTIC_HANDLE_1C,
                 Sphero.hexStringToBytes(data)
         );
+    }
+
+    public static BtLeCommand createWriteCommand1c(String data, int duration) {
+        BtLeCommand cmd = BtLeCommand.createWriteCommand(
+                Constants.UUID_SERVICE_COMMAND,
+                Constants.UUID_CHARACTERISTIC_HANDLE_1C,
+                Sphero.hexStringToBytes(data));
+        cmd.duration = duration;
+        return cmd;
     }
 
     public static BtLeCommand createSubscribeCommand(UUID service, UUID characteristic) {

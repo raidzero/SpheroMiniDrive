@@ -3,10 +3,13 @@ package com.raidzero.sphero.bluetooth;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -62,21 +65,6 @@ public class Sphero implements BtLe.BtLeListener {
         mBtLe.queryServiceCharacteristic(Constants.UUID_SERVICE_BATTERY, Constants.UUID_CHARACTERISTIC_BATTERY);
     }
 
-    public void turnOnBackLed() {
-        commandQueue.add(BtLeCommand.createWriteCommand(
-                Constants.UUID_SERVICE_COMMAND, Constants.UUID_CHARACTERISTIC_HANDLE_1C,
-                new byte[] { (byte) 0x8d, 0x0a, 0x13, 0x04, 0x15, (byte) 0xc9, (byte) 0xd8 }));
-        commandQueue.add(BtLeCommand.createWriteCommand(
-                Constants.UUID_SERVICE_COMMAND, Constants.UUID_CHARACTERISTIC_HANDLE_1C,
-                new byte[] { (byte) 0x8d, 0x0a, 0x13, 0x03, 0x16, (byte) 0xc9, (byte) 0xd8 }));
-        commandQueue.add(BtLeCommand.createWriteCommand(
-                Constants.UUID_SERVICE_COMMAND, Constants.UUID_CHARACTERISTIC_HANDLE_1C,
-                new byte[] { (byte) 0x8d, 0x0a, 0x1a, 0x0e, 0x17, 0x00, 0x01, (byte) 0xff, (byte) 0xb6, (byte) 0xd8 }));
-        commandQueue.add(BtLeCommand.createWriteCommand(
-                Constants.UUID_SERVICE_COMMAND, Constants.UUID_CHARACTERISTIC_HANDLE_1C,
-                new byte[] { (byte) 0x8d, 0x0a, 0x1a, 0x0e, 0x18, 0x00, 0x0e, 0x00, 0x00, 0x00, (byte) 0xa7, (byte) 0xd8 }));
-    }
-
 
     private void useTheForce() {
         Log.d(TAG, "useTheForce()");
@@ -84,17 +72,82 @@ public class Sphero implements BtLe.BtLeListener {
                 Constants.UUID_SERVICE_INITIALIZE,
                 Constants.UUID_CHARACTERISTIC_USETHEFORCE,
                 hexStringToBytes(Constants.STR_USE_THE_FORCE_BYTES));
+        command.duration = 50;
 
         commandQueue.add(command);
     }
 
-    private void writeCommonOne() {
-        commandQueue.add(BtLeCommand.createWriteCommand1c("8d:0a:13:0d:00:d5:d8"));
+    private void writeCommonOnes() {
+        // magic numbers to initialize the sphero
+        sendCommand("8d:0a:13:0d:00:d5:d8");
+        sendCommand("8d:0a:13:0d:01:d4:d8");
+        sendCommand("8d:0a:11:06:04:da:d8");
+        sendCommand("8d:0a:13:10:05:cd:d8");
+        sendCommand("8d:0a:13:04:06:ab:50:d8");
+        sendCommand("8d:0a:13:1e:07:bd:d8");
+        sendCommand("8d:0a:11:00:08:dc:d8");
+        sendCommand("8d:0a:13:1e:09:bb:d8");
+        sendCommand("8d:0a:13:1e:0a:ba:d8");
+        sendCommand("8d:0a:11:06:0b:d3:d8");
+        sendCommand("8d:0a:1f:27:0c:a3:d8");
+        sendCommand("8d:0a:11:12:0d:c5:d8");
+        sendCommand("8d:0a:11:28:0e:ae:d8");
+        sendCommand("8d:0a:13:10:0f:c3:d8");
+        sendCommand("8d:0a:13:04:10:ce:d8");
+        sendCommand("8d:0a:13:10:11:c1:d8");
+        sendCommand("8d:0a:13:04:12:cc:d8");
+        sendCommand("8d:0a:13:10:13:bf:d8");
+        sendCommand("8d:0a:13:04:14:ca:d8");
+        sendCommand("8d:0a:13:10:15:bd:d8");
+        sendCommand("8d:0a:13:04:16:c8:d8");
     }
 
     private void mainLedRgb(byte red, byte green, byte blue) {
         Log.d(TAG, "mainLedRgb()");
         commandQueue.add(BtLeCommand.createWriteCommand1c(SpheroCommand.createRgbString(red, green, blue)));
+    }
+
+    private void mainLedRgb(byte red, byte green, byte blue, int duration) {
+        Log.d(TAG, "mainLedRgb()");
+        commandQueue.add(BtLeCommand.createWriteCommand1c(SpheroCommand.createRgbString(red, green, blue), duration));
+    }
+
+    private void mainLedRgb(int color) {
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+
+        mainLedRgb((byte) red, (byte) green, (byte) blue);
+    }
+
+    private void mainLedRgb(int color, int duration) {
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+
+        mainLedRgb((byte) red, (byte) green, (byte) blue, duration);
+    }
+
+
+    private void rearLed(byte brightness, int duration) {
+        Log.d(TAG, "rearLed()");
+        commandQueue.add(BtLeCommand.createWriteCommand1c(SpheroCommand.createRearLedCommand(brightness), duration));
+    }
+
+    private void rearLed(byte brightness) {
+        Log.d(TAG, "rearLed()");
+        commandQueue.add(BtLeCommand.createWriteCommand1c(SpheroCommand.createRearLedCommand(brightness)));
+    }
+
+    // left & right can be -4095 to 4095
+    private void rawMotor(int left, int right, int duration) {
+        Log.d(TAG, "rawMotor()");
+        commandQueue.add(BtLeCommand.createWriteCommand1c(SpheroCommand.createRawMotorCommand(left, right), duration));
+    }
+
+    private void rotate(int power, int duration) {
+        Log.d(TAG, "rotate()");
+        commandQueue.add(BtLeCommand.createWriteCommand1c(SpheroCommand.createRotateCommand(power), duration));
     }
 
     /*
@@ -118,14 +171,27 @@ public class Sphero implements BtLe.BtLeListener {
     }
 
     public void disconnect() {
-        // tell sphero to turn off
-        /*
-        Value: 8d 0a 16 07 5c 00 01 2a 00 51 d8 // last drive command?
-        Value: 8d 0a 13 01 5d 84 d8
-        Value: 8d 0a 13 01 5e 83 d8
-        */
+        // stop motors and wait quarter second
+        rawMotor(0,0, 250);
+        // turn off main led and wait half a sec
+        mainLedRgb(Color.parseColor("#ff000000"), 500);
+        // turn off rear led
+        rearLed((byte) 0x0);
 
-        commandQueue.add(BtLeCommand.createWriteCommand1c(SpheroCommand.createDisconnectString()));
+        // send disconnection commands. not sure what they should be
+        List<String> disconnectStrings = SpheroCommand.createDisconnectStrings();
+        for (String str : disconnectStrings) {
+            commandQueue.add(BtLeCommand.createWriteCommand1c(str));
+        }
+    }
+
+    private void sendCommand(String cmd) {
+        // tshark -r 20180202-mini-connect-quit.log -2 -O btatt -R "btatt.opcode == 0x12" | grep Value | grep -o "8d0a1a0e.*$" | sed -e 's/\(..\)/\1:/g' | sed 's/:$//' | sed 's/^/sendCommand("/g' | sed 's/$/")/g'
+        commandQueue.add(BtLeCommand.createWriteCommand1c(cmd));
+    }
+
+    private void sendCommand(String cmd, int duration) {
+        commandQueue.add(BtLeCommand.createWriteCommand1c(cmd));
     }
 
     class CommandProcessor implements Runnable {
@@ -184,19 +250,62 @@ public class Sphero implements BtLe.BtLeListener {
         mServicesReadyForUse = true;
 
         useTheForce();
-
         subscribe();
-
         sendRead();
 
-        // wake up. turn on led
-        writeCommonOne();
+        // wake up
+        writeCommonOnes();
 
-        mainLedRgb((byte) 0x00, (byte) 0xff, (byte) 0x00);
+        // turn off motor just in case
+        rawMotor(0, 0, 50);
 
-        //mainLedOn();
+        // turn on rear led
+        rearLed((byte) 0xff);
 
-        //mainLedRgb((byte) 0xff, (byte) 0xff, (byte) 0x00);
+        // turn on main led
+        mainLedRgb(Color.parseColor("#ffff0000"));
+        /*
+        // 100 random color light show
+        for (int i = 0; i < 100; i++) {
+            Random r = new Random();
+            int red = r.nextInt(256);
+            int green = r.nextInt(256);
+            int blue = r.nextInt(256);
+            String color = String.format("#ff%02x%02x%02x", red, green, blue);
+            mainLedRgb(Color.parseColor(color));
+        }
+
+        // now breathe green, five times, keeping the rear led on while "inhaling"
+        for (int i = 0; i < 5; i++) {
+            for (int g = 0; g < 256; g += 20) {
+                mainLedRgb(Color.parseColor(String.format("#ff00%02x00", g)));
+            }
+            rearLed((byte) 0x00);
+            for (int g = 255; g > 0; g -= 20) {
+                mainLedRgb(Color.parseColor(String.format("#ff00%02x00", g)));
+            }
+            rearLed((byte) 0xff);
+        }
+
+        // turn off rear led
+        rearLed((byte) 0x00);
+
+        // main led back to blue
+        mainLedRgb(Color.parseColor("#ff0054ff"));
+        */
+
+        // motor stuff: spin left for 2 secs, stop for 1 sec, spin right for 2 secs, stop for 1s
+
+        rawMotor(50, 50, 2000);
+        rawMotor(0, 0, 1000);
+        rawMotor(-50, -50, 2000);
+        rawMotor(0, 0, 1000);
+
+
+        // rotate for 1 second then rotate the other way for a second
+        //rotate(-4095, 1000);
+        //rotate(4095, 1000);
+        //disconnect();
     }
 
     @Override

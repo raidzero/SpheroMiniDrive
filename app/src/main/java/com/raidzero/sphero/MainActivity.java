@@ -54,4 +54,10 @@ public class MainActivity extends Activity {
             sphero.disconnect();
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sphero.disconnect();
+    }
 }

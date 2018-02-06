@@ -17,7 +17,7 @@ import java.util.UUID;
  */
 
 public class BtLe {
-    private static final String TAG = "BtLeAsync";
+    private static final String TAG = "BtLe";
 
     private Context mContext;
     private BluetoothDevice mDevice;
@@ -27,6 +27,7 @@ public class BtLe {
     private boolean mServicesDiscovered;
     private boolean mConnected;
     private boolean mTxBusy = false;
+    private int mWaitLength;
 
     BtLeListener mListener;
     public interface BtLeListener {
@@ -38,6 +39,8 @@ public class BtLe {
     BtLe(Context context, BluetoothDevice device) {
         mContext = context;
         mDevice = device;
+
+        Log.d(TAG, "connecting gatt...");
         mGatt = mDevice.connectGatt(mContext, true, mGattCallback);
 
     }
@@ -124,6 +127,7 @@ public class BtLe {
             c.setValue(data);
 
             Log.d(TAG, "writeToServiceCharacteristic(): " + service + ": " + characteristic);
+            Log.d(TAG, "writeData: " + bytesToString(data));
 
             mTxBusy = true;
             boolean success = mGatt.writeCharacteristic(c);
@@ -136,12 +140,12 @@ public class BtLe {
     }
 
     public boolean writeToServiceCharacteristic(BtLeCommand command) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : command.data) {
-            sb.append(String.format("%02X ", b));
-        }
-        Log.d(TAG, "writeData: " + sb.toString());
-        return writeToServiceCharacteristic(command.service, command.characteristic, command.data);
+        mWaitLength = command.duration;
+        return writeToServiceCharacteristic(
+                command.service,
+                command.characteristic,
+                command.data
+        );
     }
 
     public void disconnect() {
@@ -163,6 +167,12 @@ public class BtLe {
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 mConnected = true;
                 // Discover services.
+                try {
+                    // wait 600 ms
+                    Thread.sleep(600);
+                } catch (Exception e) {
+
+                }
                 gatt.discoverServices();
             }
             else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
@@ -198,6 +208,11 @@ public class BtLe {
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
             Log.d(TAG, "onCharacteristicWrite(): " + bytesToString(characteristic.getValue()));
+            try {
+                Thread.sleep(mWaitLength); // only want 20 commands to be sent per second (20hz)
+            } catch (Exception e) {
+                // ignored
+            }
             mTxBusy = false;
         }
 
