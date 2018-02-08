@@ -1,4 +1,4 @@
-package com.raidzero.sphero.bluetooth;
+package com.raidzero.sphero.global;
 
 import java.util.UUID;
 
@@ -24,5 +24,4 @@ public class Constants {
     // magic data to get the sphero to listen to us and not immediately disconnect gatt
     // ...usetheforce. ..band
     public static final String STR_USE_THE_FORCE_BYTES = "75:73:65:74:68:65:66:6f:72:63:65:2e:2e:2e:62:61:6e:64";
-
 }

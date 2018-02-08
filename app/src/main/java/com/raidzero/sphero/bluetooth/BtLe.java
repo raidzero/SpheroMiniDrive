@@ -9,8 +9,16 @@ import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.util.Log;
 
-import java.lang.reflect.Field;
+import com.raidzero.sphero.global.Constants;
+
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import static com.raidzero.sphero.global.ByteUtils.bytesToString;
+import static com.raidzero.sphero.global.ByteUtils.hexStringToBytes;
 
 /**
  * Created by raidzero on 1/21/18.
@@ -29,7 +37,11 @@ public class BtLe {
     private boolean mTxBusy = false;
     private int mWaitLength;
 
-    BtLeListener mListener;
+    ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
+    BlockingQueue<BtLeCommand> commandQueue = new LinkedBlockingQueue<BtLeCommand>();
+    CommandProcessor commandProcessor = new CommandProcessor();
+
+    private BtLeListener mListener;
     public interface BtLeListener {
         void onServicesDiscoverySuccess();
         void onServicesDiscoveryFail();
@@ -42,7 +54,10 @@ public class BtLe {
 
         Log.d(TAG, "connecting gatt...");
         mGatt = mDevice.connectGatt(mContext, true, mGattCallback);
+    }
 
+    public void addCommandToQueue(BtLeCommand command) {
+        commandQueue.add(command);
     }
 
     void setListener(BtLeListener listener) {
@@ -110,7 +125,7 @@ public class BtLe {
         return subscribeForNotifications(command.service, command.characteristic);
     }
 
-    public boolean writeToServiceCharacteristic(UUID service, UUID characteristic, byte[] data) {
+    private boolean writeToServiceCharacteristic(UUID service, UUID characteristic, byte[] data) {
         if (mServicesDiscovered) {
             BluetoothGattService s = mGatt.getService(service);
             if (s == null) {
@@ -139,7 +154,7 @@ public class BtLe {
         return false;
     }
 
-    public boolean writeToServiceCharacteristic(BtLeCommand command) {
+    boolean writeToServiceCharacteristic(BtLeCommand command) {
         mWaitLength = command.duration;
         return writeToServiceCharacteristic(
                 command.service,
@@ -154,7 +169,7 @@ public class BtLe {
         mGatt = null;
     }
 
-    public boolean isDeviceBusy() {
+    boolean isDeviceBusy() {
         return mTxBusy;
     }
 
@@ -189,6 +204,10 @@ public class BtLe {
 
             if (mServicesDiscovered) {
                 mListener.onServicesDiscoverySuccess();
+
+                if (!commandExecutor.isShutdown()) {
+                    commandExecutor.execute(commandProcessor);
+                }
             } else {
                 mListener.onServicesDiscoveryFail();
             }
@@ -208,10 +227,12 @@ public class BtLe {
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
             Log.d(TAG, "onCharacteristicWrite(): " + bytesToString(characteristic.getValue()));
-            try {
-                Thread.sleep(mWaitLength); // only want 20 commands to be sent per second (20hz)
-            } catch (Exception e) {
-                // ignored
+            if (mWaitLength > 0) {
+                try {
+                    Thread.sleep(mWaitLength); // wait however long before allowing the next command to be sent
+                } catch (Exception e) {
+                    // ignored
+                }
             }
             mTxBusy = false;
         }
@@ -238,12 +259,42 @@ public class BtLe {
         }
     }
 
-    public static String bytesToString(byte[] bytes) {
-        StringBuilder builder = new StringBuilder();
-        for (byte b : bytes) {
-            builder.append(String.format("%02X ", b));
-        }
+    class CommandProcessor implements Runnable {
+        @Override
+        public void run() {
+            Log.d(TAG, "starting command processor.");
+            try {
+                while (!commandExecutor.isShutdown()) {
+                    // grab command off queue
+                    if (commandQueue.size() > 0 && !isDeviceBusy()) {
+                        BtLeCommand command = commandQueue.take();
+                        switch (command.commandType) {
+                            case WRITE_CHARACTERISTIC:
+                                Log.d(TAG, "CommandProcessor sending write request "
+                                        + bytesToString(command.data)
+                                        + " to " + command.service + ": "
+                                        + command.characteristic
+                                        + " wait time: " + command.duration);
 
-        return builder.toString();
+                                writeToServiceCharacteristic(command);
+                                break;
+                            case READ_CHARACTERISTIC:
+                                Log.d(TAG, "CommandProcessor sending read request"
+                                        + " to " + command.service + ": "
+                                        + command.characteristic);
+                                queryServiceCharacteristic(command);
+                                break;
+                            case SUBSCRIBE_CHARACTERISTIC_NOTIFICATIONS:
+                                Log.d(TAG, "CommandProcessor sending subscribe request"
+                                        + " to " + command.service + ": "
+                                        + command.characteristic);
+                                subscribeForNotifications(command);
+                                break;
+                        }
+                    }
+                }
+            } catch (InterruptedException e) {
+            }
+        }
     }
 }
