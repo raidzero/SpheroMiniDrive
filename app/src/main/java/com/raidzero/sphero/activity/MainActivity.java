@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.raidzero.sphero.R;
 import com.raidzero.sphero.bluetooth.Sphero;
@@ -18,7 +20,7 @@ import java.util.concurrent.Executors;
 import static java.lang.Math.abs;
 
 
-public class MainActivity extends Activity implements Sphero.SpheroListener {
+public class MainActivity extends Activity implements Sphero.SpheroListener, SeekBar.OnSeekBarChangeListener {
     private static final String TAG = "MainActivity";
 
     private BluetoothAdapter adapter;
@@ -40,6 +42,32 @@ public class MainActivity extends Activity implements Sphero.SpheroListener {
     private LedProcessor ledProcessor = new LedProcessor();
     private ExecutorService ledService = Executors.newSingleThreadExecutor();
 
+    // UI elements
+    SeekBar maxSpeedBar;
+    TextView maxSpeedPercentage;
+    TextView battery;
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int value, boolean fromUser) {
+        joystickProcessor.setMaxSpeed(value);
+
+        if (value < 50) {
+            value = 50;
+            maxSpeedBar.setProgress(value);
+        }
+        maxSpeedPercentage.setText(String.valueOf((int) ((value / 255.0) * 100)) + "%");
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
+    }
+
     enum SpheroControlMode {
         DUAL_STICK,
         SINGLE_STICK
@@ -52,6 +80,11 @@ public class MainActivity extends Activity implements Sphero.SpheroListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        maxSpeedBar = (SeekBar) findViewById(R.id.maxSpeedBar);
+        maxSpeedPercentage = (TextView) findViewById(R.id.maxSpeedPercentage);
+        battery = (TextView) findViewById(R.id.battery);
+
+        maxSpeedBar.setOnSeekBarChangeListener(this);
         adapter = BluetoothAdapter.getDefaultAdapter();
     }
 
@@ -88,7 +121,17 @@ public class MainActivity extends Activity implements Sphero.SpheroListener {
 
     @Override
     public void onSpheroDisconnected() {
-        // nothing
+
+    }
+
+    @Override
+    public void onBatteryLevelChange(final int newLevel) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                battery.setText(getString(R.string.label_battery) + String.format("%d%%", newLevel));
+            }
+        });
     }
 
     private void startJoystickService() {
@@ -108,7 +151,7 @@ public class MainActivity extends Activity implements Sphero.SpheroListener {
         // turn off motor just in case
         sphero.rawMotor(0, 0, 50);
 
-        joystickProcessor.setMaxSpeed(255); // full speed ahead!
+        joystickProcessor.setMaxSpeed(127); // default to half speed
         startJoystickService();
 
         ledProcessor.setMode(LedMode.SOLID);
@@ -186,6 +229,7 @@ public class MainActivity extends Activity implements Sphero.SpheroListener {
     class JoystickProcessor implements Runnable {
         boolean running;
         boolean movementStopped;
+        boolean rearLedOff;
 
         SpheroControlMode mode;
         int maxSpeed = 127; // restrict to ~half speed by default
@@ -225,8 +269,12 @@ public class MainActivity extends Activity implements Sphero.SpheroListener {
                         if (rightJoystickMoving) {
                             sphero.rearLed(true, 0);
                             sphero.roll(0, aimInt, 0);
+                            rearLedOff = false;
                         } else {
-                            sphero.rearLed(false, 0);
+                            if (!rearLedOff) {
+                                sphero.rearLed(false, 0);
+                                rearLedOff = true;
+                            }
                         }
 
                         break;
@@ -328,7 +376,7 @@ public class MainActivity extends Activity implements Sphero.SpheroListener {
                                 try { Thread.sleep(5); } catch (Exception e) {}
                             }
                         }
-
+                        break;
                     case SOLID:
                         if (!solidColorSet) {
                             sphero.mainLedRgb(ledColor, 0);

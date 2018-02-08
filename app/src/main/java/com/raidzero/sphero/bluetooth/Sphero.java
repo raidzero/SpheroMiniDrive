@@ -10,14 +10,7 @@ import com.raidzero.sphero.global.Constants;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import static com.raidzero.sphero.global.ByteUtils.bytesToString;
 import static com.raidzero.sphero.global.ByteUtils.hexStringToBytes;
 
 /**
@@ -31,11 +24,12 @@ public class Sphero implements BtLe.BtLeListener {
     private boolean mServicesReadyForUse;
     private SpheroListener mListener;
 
-
+    private int batteryLevel = -1;
 
     public interface SpheroListener {
         void onSpheroConnected();
         void onSpheroDisconnected();
+        void onBatteryLevelChange(int newLevel);
     }
 
     public Sphero(Context context, BluetoothDevice device, SpheroListener listener) {
@@ -47,12 +41,6 @@ public class Sphero implements BtLe.BtLeListener {
 
     public String getName() {
         return mName;
-    }
-
-    // send battery level to listener
-    public void queryBatteryLevel() {
-        // no need to queue this
-        mBtLe.queryServiceCharacteristic(Constants.UUID_SERVICE_BATTERY, Constants.UUID_CHARACTERISTIC_BATTERY);
     }
 
     private void useTheForce() {
@@ -70,6 +58,11 @@ public class Sphero implements BtLe.BtLeListener {
         Log.d(TAG, "subscribe()");
         BtLeCommand command = BtLeCommand.createSubscribeCommand(Constants.UUID_SERVICE_INITIALIZE, UUID.fromString("00020002-574f-4f20-5370-6865726f2121"));
 
+        mBtLe.addCommandToQueue(command);
+    }
+
+    private void subscribeForBatteryNotifications() {
+        BtLeCommand command = BtLeCommand.createSubscribeCommand(Constants.UUID_SERVICE_BATTERY, Constants.UUID_CHARACTERISTIC_BATTERY);
         mBtLe.addCommandToQueue(command);
     }
 
@@ -157,17 +150,13 @@ public class Sphero implements BtLe.BtLeListener {
     }
 
     public void disconnect() {
-        // stop motors and wait quarter second
-        rawMotor(0,0, 250);
-        // turn off main led and wait half a sec
-        mainLedRgb(Color.parseColor("#ff000000"), 500);
-        // turn off rear led
-        rearLed(false);
+        // stop motors
+        rawMotor(0,0, 0);
 
         // send disconnection commands. not sure what they should be
         List<String> disconnectStrings = SpheroCommand.createDisconnectStrings();
         for (String str : disconnectStrings) {
-            mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(str));
+            mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(str, 0));
         }
 
         mListener.onSpheroDisconnected();
@@ -175,7 +164,7 @@ public class Sphero implements BtLe.BtLeListener {
 
     private void sendCommand(String cmd) {
         // tshark -r 20180202-mini-connect-quit.log -2 -O btatt -R "btatt.opcode == 0x12" | grep Value | grep -o "8d0a1a0e.*$" | sed -e 's/\(..\)/\1:/g' | sed 's/:$//' | sed 's/^/sendCommand("/g' | sed 's/$/")/g'
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(cmd));
+        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(cmd, 0));
     }
 
     private void sendCommand(String cmd, int duration) {
@@ -192,12 +181,11 @@ public class Sphero implements BtLe.BtLeListener {
 
         useTheForce();
         subscribe();
+        subscribeForBatteryNotifications();
         sendRead();
 
         // wake up
         writeCommonOnes();
-
-
 
         mListener.onSpheroConnected();
     }
@@ -208,20 +196,12 @@ public class Sphero implements BtLe.BtLeListener {
     }
 
     @Override
-    public void onCharacteristicRead(BluetoothGattCharacteristic characteristic) {
+    public void onCharacteristicChanged(BluetoothGattCharacteristic characteristic) {
         if (characteristic.getUuid().toString().equals(Constants.UUID_CHARACTERISTIC_BATTERY.toString())) {
             int batteryLevel = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
             Log.d(TAG, (String.format(Locale.US, "Battery level: %d%%", batteryLevel)));
+            this.batteryLevel = batteryLevel;
+            mListener.onBatteryLevelChange(batteryLevel);
         }
     }
-
-    /**
-     * LED service follows
-     */
-
-
-
-
-
-
 }

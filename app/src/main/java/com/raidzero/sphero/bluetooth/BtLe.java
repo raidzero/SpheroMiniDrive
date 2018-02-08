@@ -45,7 +45,7 @@ public class BtLe {
     public interface BtLeListener {
         void onServicesDiscoverySuccess();
         void onServicesDiscoveryFail();
-        void onCharacteristicRead(BluetoothGattCharacteristic characteristic);
+        void onCharacteristicChanged(BluetoothGattCharacteristic characteristic);
     }
 
     BtLe(Context context, BluetoothDevice device) {
@@ -53,7 +53,7 @@ public class BtLe {
         mDevice = device;
 
         Log.d(TAG, "connecting gatt...");
-        mGatt = mDevice.connectGatt(mContext, true, mGattCallback);
+        mGatt = mDevice.connectGatt(mContext, false, mGattCallback);
     }
 
     public void addCommandToQueue(BtLeCommand command) {
@@ -179,8 +179,10 @@ public class BtLe {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
 
-            if (newState == BluetoothGatt.STATE_CONNECTED) {
-                mConnected = true;
+            mConnected = newState == BluetoothGatt.STATE_CONNECTED;
+            Log.d(TAG, "gatt connection state change. connected: " + mConnected);
+
+            if (mConnected) {
                 // Discover services.
                 try {
                     // wait 600 ms
@@ -189,12 +191,9 @@ public class BtLe {
 
                 }
                 gatt.discoverServices();
-            }
-            else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                mConnected = false;
-            }
+            } else {
 
-            Log.d(TAG, "connection state change. connected: " + mConnected);
+            }
         }
 
         @Override
@@ -219,7 +218,6 @@ public class BtLe {
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
             Log.d(TAG, "onCharacteristicRead(): " + bytesToString(characteristic.getValue()));
-            mListener.onCharacteristicRead(characteristic);
             mTxBusy = false;
         }
 
@@ -241,6 +239,7 @@ public class BtLe {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
             Log.d(TAG, "onCharacteristicChanged(): " + bytesToString(characteristic.getValue()));
+            mListener.onCharacteristicChanged(characteristic);
             mTxBusy = false;
         }
 

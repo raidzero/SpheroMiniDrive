@@ -3,4 +3,6 @@
 
     <string name="app_name">SpheroMiniDrive</string>
 
+    <string name="label_max_speed_slider">Maximum Speed</string>
+    <string name="label_battery">Battery level: </string>
 </resources>
