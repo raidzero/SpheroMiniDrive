@@ -2,11 +2,14 @@ package com.raidzero.sphero.activity;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -23,9 +26,11 @@ import static java.lang.Math.abs;
 public class MainActivity extends Activity implements Sphero.SpheroListener, SeekBar.OnSeekBarChangeListener {
     private static final String TAG = "MainActivity";
 
+    // main players
     private BluetoothAdapter adapter;
     private Sphero sphero;
 
+    SharedPreferences prefs;
     // for raw mode
     private int leftPower, rightPower;
 
@@ -56,6 +61,7 @@ public class MainActivity extends Activity implements Sphero.SpheroListener, See
             maxSpeedBar.setProgress(value);
         }
         maxSpeedPercentage.setText(String.valueOf((int) ((value / 255.0) * 100)) + "%");
+        prefs.edit().putInt("maxSpeed", value).apply();
     }
 
     @Override
@@ -80,11 +86,18 @@ public class MainActivity extends Activity implements Sphero.SpheroListener, See
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // dont go to sleep and cause the BT LE connection to drop
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        prefs = getSharedPreferences("SpheroMiniDrive", Context.MODE_PRIVATE);
+
         maxSpeedBar = (SeekBar) findViewById(R.id.maxSpeedBar);
         maxSpeedPercentage = (TextView) findViewById(R.id.maxSpeedPercentage);
         battery = (TextView) findViewById(R.id.battery);
 
         maxSpeedBar.setOnSeekBarChangeListener(this);
+
+        maxSpeedBar.setProgress(prefs.getInt("maxSpeed", 127));
         adapter = BluetoothAdapter.getDefaultAdapter();
     }
 
@@ -149,12 +162,11 @@ public class MainActivity extends Activity implements Sphero.SpheroListener, See
 
     private void init() {
         // turn off motor just in case
-        sphero.rawMotor(0, 0, 50);
-
+        sphero.roll(0, 0, 0);
         joystickProcessor.setMaxSpeed(127); // default to half speed
         startJoystickService();
 
-        ledProcessor.setMode(LedMode.SOLID);
+        ledProcessor.setMode(LedMode.FADE_RGB);
         ledProcessor.setColor(Color.parseColor("#ff00ff00"));
 
         startLedService();
@@ -313,8 +325,6 @@ public class MainActivity extends Activity implements Sphero.SpheroListener, See
         STROBE_RANDOM,
         BREATHE,
         SOLID,
-
-        // experimental:
         FADE_RGB,
     }
 
@@ -373,7 +383,7 @@ public class MainActivity extends Activity implements Sphero.SpheroListener, See
 
                                 sphero.mainLedRgb(Color.parseColor(String.format("#ff%02x%02x%02x",
                                         rgbColor[0], rgbColor[1], rgbColor[2])), 0);
-                                try { Thread.sleep(5); } catch (Exception e) {}
+                                try { Thread.sleep(40); } catch (Exception e) {}
                             }
                         }
                         break;
