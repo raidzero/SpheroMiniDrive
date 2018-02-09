@@ -4,5 +4,14 @@
     <string name="app_name">SpheroMiniDrive</string>
 
     <string name="label_max_speed_slider">Maximum Speed</string>
+    <string name="label_led_mode">LED Mode</string>
     <string name="label_battery">Battery level: </string>
+
+    <string-array name="ledModes">
+        <item>RGB Fade</item>
+        <item>Breathe</item>
+        <item>Solid</item>
+        <item>Strobe</item>
+        <item>Strobe Random</item>
+    </string-array>
 </resources>

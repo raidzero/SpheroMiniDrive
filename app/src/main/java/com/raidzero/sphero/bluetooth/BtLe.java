@@ -11,6 +11,8 @@ import android.util.Log;
 
 import com.raidzero.sphero.global.Constants;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -35,6 +37,7 @@ public class BtLe {
     private boolean mServicesDiscovered;
     private boolean mConnected;
     private boolean mTxBusy = false;
+    private boolean shutDownWhenDone = false;
     private int mWaitLength;
 
     ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
@@ -46,6 +49,7 @@ public class BtLe {
         void onServicesDiscoverySuccess();
         void onServicesDiscoveryFail();
         void onCharacteristicChanged(BluetoothGattCharacteristic characteristic);
+        void onCommandProcessorFinish();
     }
 
     BtLe(Context context, BluetoothDevice device) {
@@ -290,10 +294,33 @@ public class BtLe {
                                 subscribeForNotifications(command);
                                 break;
                         }
+                    } else {
+                        if (commandQueue.size() == 0 && shutDownWhenDone) {
+                            stop();
+                        }
+                    }
+
+                    try {
+                        Thread.sleep(10);
+                    } catch (Exception e) {
+
                     }
                 }
             } catch (InterruptedException e) {
             }
         }
+    }
+
+    public void clearCommandQueue() {
+        commandQueue.clear();
+    }
+
+    public void stop() {
+        commandExecutor.shutdownNow();
+        mListener.onCommandProcessorFinish();
+    }
+
+    public void prepareToShutDown() {
+        shutDownWhenDone = true;
     }
 }

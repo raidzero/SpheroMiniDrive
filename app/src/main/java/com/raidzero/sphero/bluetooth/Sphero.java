@@ -153,13 +153,14 @@ public class Sphero implements BtLe.BtLeListener {
         // stop motors
         rawMotor(0,0, 0);
 
+        mBtLe.clearCommandQueue();
+        mBtLe.prepareToShutDown();
+
         // send disconnection commands. not sure what they should be
         List<String> disconnectStrings = SpheroCommand.createDisconnectStrings();
         for (String str : disconnectStrings) {
             mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(str, 0));
         }
-
-        mListener.onSpheroDisconnected();
     }
 
     private void sendCommand(String cmd) {
@@ -169,6 +170,10 @@ public class Sphero implements BtLe.BtLeListener {
 
     private void sendCommand(String cmd, int duration) {
         mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(cmd));
+    }
+
+    public void clearCommands() {
+        mBtLe.clearCommandQueue();
     }
 
     /**
@@ -203,5 +208,10 @@ public class Sphero implements BtLe.BtLeListener {
             this.batteryLevel = batteryLevel;
             mListener.onBatteryLevelChange(batteryLevel);
         }
+    }
+
+    @Override
+    public void onCommandProcessorFinish() {
+        mListener.onSpheroDisconnected();
     }
 }
