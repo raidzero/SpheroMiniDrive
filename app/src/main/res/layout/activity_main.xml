@@ -51,14 +51,31 @@
             android:labelFor="@id/ledMode"
             android:gravity="start"/>
 
-        <Spinner
-            android:id="@+id/ledMode"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end"
-            android:entries="@array/ledModes"
-            android:focusable="false"
-            android:focusableInTouchMode="false"/>
+            android:orientation="horizontal">
+
+            <Spinner
+                android:id="@+id/ledMode"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:entries="@array/ledModes"
+                android:focusable="false"
+                android:focusableInTouchMode="false"/>
+
+            <Button
+                android:id="@+id/btn_color_select"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="@string/label_select_color"/>
+
+        </LinearLayout>
+
     </LinearLayout>
 
     <TextView

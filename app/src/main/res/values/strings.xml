@@ -6,6 +6,7 @@
     <string name="label_max_speed_slider">Maximum Speed</string>
     <string name="label_led_mode">LED Mode</string>
     <string name="label_battery">Battery level: </string>
+    <string name="label_select_color">Select color</string>
 
     <string-array name="ledModes">
         <item>RGB Fade</item>

@@ -4,6 +4,9 @@ import android.graphics.Color;
 
 import com.raidzero.sphero.bluetooth.Sphero;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,6 +46,7 @@ public class LedProcessor {
         int ledColor;
         boolean solidColorSet;
         boolean modeChanged = false;
+        boolean colorChanged = false;
 
         @Override
         public void run() {
@@ -66,13 +70,21 @@ public class LedProcessor {
                         break;
                     case BREATHE:
                         solidColorSet = false;
-                        for (int g = 0; g < 256; g += 20) {
-                            sphero.mainLedRgb(Color.parseColor(String.format("#ff00%02x00", g)), 0);
+
+                        for (int breatheColor : createBreatheSteps(ledColor, 5)) {
+                            sphero.mainLedRgb(breatheColor);
+
                             try { Thread.sleep(100); } catch (Exception e) {}
+
                             if (modeChanged) {
                                 modeChanged = false;
                                 break outerLoop;
                             }
+                        }
+                        /*
+                        for (int g = 0; g < 256; g += 20) {
+                            sphero.mainLedRgb(Color.parseColor(String.format("#ff00%02x00", g)), 0);
+
                         }
                         for (int g = 255; g > 0; g -= 20) {
 
@@ -82,7 +94,7 @@ public class LedProcessor {
                                 modeChanged = false;
                                 break outerLoop;
                             }
-                        }
+                        }*/
                         break;
                     case FADE_RGB:
                         solidColorSet = false;
@@ -164,10 +176,55 @@ public class LedProcessor {
 
     public void setLedColor(int color) {
         thread.ledColor = color;
+        thread.solidColorSet = false;
     }
 
     public void stop() {
         thread.interrupt();
         service.shutdownNow();
+    }
+
+    private List<Integer> createBreatheSteps(int color, int steps) {
+        List<Integer> colors = new ArrayList<Integer>();
+
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+
+        int redSteps = safeIntegerDivision(red, steps);
+        int greenSteps = safeIntegerDivision(green, steps);
+        int blueSteps = safeIntegerDivision(blue, steps);
+
+        int r = 0;
+        int g = 0;
+        int b = 0;
+
+        // create fade in
+        List<Integer> faded = new ArrayList<Integer>();
+        faded.add(Color.BLACK);
+
+        for (int i = 0; i < steps; i++) {
+            r += redSteps;
+            g += greenSteps;
+            b += blueSteps;
+
+            faded.add(Color.argb(255, r, g, b));
+        }
+
+        colors.addAll(faded);
+
+        // now reverse and add
+        Collections.reverse(faded);
+        colors.addAll(faded);
+
+        return colors;
+    }
+
+    private int safeIntegerDivision(int numerator, int denominator) {
+        if (numerator == 0 || denominator == 0) {
+            return 0;
+        } else {
+            return numerator / denominator;
+        }
     }
 }
