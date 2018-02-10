@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -41,6 +40,7 @@ public class ColorPickerFragment extends DialogFragment implements SeekBar.OnSee
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        getDialog().setTitle(getString(R.string.label_select_color));
         return inflater.inflate(R.layout.fragment_color_picker, container, false);
     }
 

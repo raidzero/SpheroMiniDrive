@@ -91,6 +91,7 @@ public class MainActivity extends Activity implements
         selectColor = (Button) findViewById(R.id.btn_color_select);
 
         maxSpeedBar.setProgress(prefs.getInt("maxSpeed", 127));
+        jsData.maxSpeed = prefs.getInt("maxSpeed", 127);
         adapter = BluetoothAdapter.getDefaultAdapter();
     }
 
