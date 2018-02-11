@@ -10,79 +10,110 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/driveControls"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:text="@string/label_max_speed_slider"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:labelFor="@id/maxSpeedBar"
-            android:gravity="start"/>
-
-        <TextView
-            android:id="@+id/maxSpeedPercentage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="50%"
-            android:gravity="end"/>
-
-    </LinearLayout>
-
-    <SeekBar
-        android:id="@+id/maxSpeedBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:max="255"
-        android:progress="127"
-        android:focusable="false"
-        android:focusableInTouchMode="false"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:text="@string/label_led_mode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:labelFor="@id/ledMode"
-            android:gravity="start"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <Spinner
-                android:id="@+id/ledMode"
-                android:layout_weight="2"
-                android:layout_width="0dp"
+            <TextView
+                android:text="@string/label_max_speed_slider"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="start"
-                android:entries="@array/ledModes"
-                android:focusable="false"
-                android:focusableInTouchMode="false"/>
+                android:labelFor="@id/maxSpeedBar"
+                android:gravity="start"/>
 
-            <Button
-                android:id="@+id/btn_color_select"
-                android:layout_weight="2"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/maxSpeedPercentage"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:text="@string/label_select_color"/>
+                android:text="50%"
+                android:gravity="end"/>
 
         </LinearLayout>
 
+        <SeekBar
+            android:id="@+id/maxSpeedBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="255"
+            android:progress="127"
+            android:focusable="false"
+            android:focusableInTouchMode="false"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:text="@string/label_led_mode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:labelFor="@id/ledMode"
+                android:gravity="start"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Spinner
+                    android:id="@+id/ledMode"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:entries="@array/ledModes"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"/>
+
+                <Button
+                    android:id="@+id/btn_color_select"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:text="@string/label_select_color"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/battery"
+            android:text="@string/label_battery"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="bottom"/>
+
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/battery"
-        android:text="@string/label_battery"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/connectingDisplay"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="bottom"/>
+        android:orientation="vertical">
+
+        <TextView
+            android:text="@string/label_connecting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:labelFor="@id/progress_connecting"/>
+
+        <ProgressBar
+            android:id="@+id/progress_connecting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+    </LinearLayout>
+
 
 </LinearLayout>

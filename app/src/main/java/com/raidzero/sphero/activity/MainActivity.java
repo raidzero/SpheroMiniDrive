@@ -3,6 +3,7 @@ package com.raidzero.sphero.activity;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -12,9 +13,11 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.raidzero.sphero.R;
 import com.raidzero.sphero.bluetooth.Sphero;
@@ -35,7 +38,9 @@ public class MainActivity extends Activity implements
     // main players
     private BluetoothAdapter adapter;
     private Sphero sphero;
+    private String savedSpheroAddress;
 
+    private static final int SCAN_ACTIVITY_REQUEST_CODE = 1000;
     SharedPreferences prefs;
 
     // executor service for controlling the sphero motors
@@ -46,6 +51,7 @@ public class MainActivity extends Activity implements
     LedProcessor ledProcessor;
 
     // UI elements
+    LinearLayout driveControls, connectingOverlay;
     SeekBar maxSpeedBar;
     Spinner ledMode;
     TextView maxSpeedPercentage;
@@ -83,6 +89,10 @@ public class MainActivity extends Activity implements
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         prefs = getSharedPreferences("SpheroMiniDrive", Context.MODE_PRIVATE);
+        savedSpheroAddress = prefs.getString("spheroAddress", null);
+
+        driveControls = (LinearLayout) findViewById(R.id.driveControls);
+        connectingOverlay = (LinearLayout) findViewById(R.id.connectingDisplay);
 
         maxSpeedBar = (SeekBar) findViewById(R.id.maxSpeedBar);
         ledMode = (Spinner) findViewById(R.id.ledMode);
@@ -98,11 +108,21 @@ public class MainActivity extends Activity implements
     @Override
     protected void onResume() {
         super.onResume();
+        connectingOverlay.setVisibility(View.VISIBLE);
+        driveControls.setVisibility(View.GONE);
         if (sphero != null) {
             sphero.disconnect();
         }
 
-        sphero = new Sphero(this, adapter.getRemoteDevice("E5:67:61:BA:3D:57"), this);
+        if (savedSpheroAddress != null) {
+            connectToSphero();
+        } else {
+            startActivityForResult(new Intent(this, ScanActivity.class), SCAN_ACTIVITY_REQUEST_CODE);
+        }
+    }
+
+    private void connectToSphero() {
+        sphero = new Sphero(this, adapter.getRemoteDevice(savedSpheroAddress), this);
     }
 
     @Override
@@ -131,7 +151,31 @@ public class MainActivity extends Activity implements
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case SCAN_ACTIVITY_REQUEST_CODE:
+                if (resultCode == RESULT_OK) {
+                    String spheroAddress = data.getStringExtra("spheroAddress");
+                    prefs.edit().putString("spheroAddress", spheroAddress).apply();
+                    savedSpheroAddress = spheroAddress;
+                    connectToSphero();
+                } else {
+                    Toast.makeText(this, getString(R.string.scan_no_spheros_found), Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
+    }
+
+    @Override
     public void onSpheroConnected() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                driveControls.setVisibility(View.VISIBLE);
+                connectingOverlay.setVisibility(View.GONE);
+            }
+        });
+
         init();
     }
 
