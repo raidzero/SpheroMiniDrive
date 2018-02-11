@@ -171,6 +171,9 @@ public class MainActivity extends Activity implements
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Toast.makeText(MainActivity.this,
+                        getString(R.string.sphero_connected, sphero.getName()), Toast.LENGTH_SHORT)
+                        .show();
                 driveControls.setVisibility(View.VISIBLE);
                 connectingOverlay.setVisibility(View.GONE);
             }
