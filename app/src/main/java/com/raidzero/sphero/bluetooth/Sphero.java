@@ -49,7 +49,7 @@ public class Sphero implements BtLe.BtLeListener {
         BtLeCommand command = BtLeCommand.createWriteCommand(
                 Constants.UUID_SERVICE_INITIALIZE,
                 Constants.UUID_CHARACTERISTIC_USETHEFORCE,
-                hexStringToBytes(Constants.STR_USE_THE_FORCE_BYTES));
+                Constants.USE_THE_FORCE_BYTES);
         mBtLe.addCommandToQueue(command);
     }
 
