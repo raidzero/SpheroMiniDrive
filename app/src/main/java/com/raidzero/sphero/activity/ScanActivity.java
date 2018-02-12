@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -25,7 +26,6 @@ public class ScanActivity extends Activity implements BluetoothAdapter.LeScanCal
     private static final String TAG = "ScanActivity";
 
     private BluetoothAdapter mBtAdapter;
-    private boolean mScanning;
     private Handler mHandler;
 
     // stop scanning after five seconds
@@ -33,13 +33,23 @@ public class ScanActivity extends Activity implements BluetoothAdapter.LeScanCal
 
     private List<String> mDiscoveredSpheroAddresses = new ArrayList<String>();
 
+    private boolean mScanning;
+    private SharedPreferences prefs;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mHandler = new Handler();
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-        startScanningForSpheros();
+
+        prefs = getSharedPreferences("SpheroMiniDrive", Context.MODE_PRIVATE);
+
+        if (prefs.getString("spheroAddress", null) == null) {
+            startScanningForSpheros();
+        } else {
+            startActivity(new Intent(this, MainActivity.class));
+        }
     }
 
     private void startScanningForSpheros() {
@@ -47,11 +57,12 @@ public class ScanActivity extends Activity implements BluetoothAdapter.LeScanCal
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mScanning = false;
-                mBtAdapter.stopLeScan(ScanActivity.this);
+                if (mScanning) {
+                    mBtAdapter.stopLeScan(ScanActivity.this);
 
-               setResult(RESULT_CANCELED);
-               finish();
+                    setResult(RESULT_CANCELED);
+                    finish();
+                }
             }
         }, SCAN_PERIOD);
 
@@ -63,6 +74,7 @@ public class ScanActivity extends Activity implements BluetoothAdapter.LeScanCal
     public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
         if (parseUUIDs(scanRecord).contains(Constants.UUID_SERVICE_COMMAND)) {
             if (!mDiscoveredSpheroAddresses.contains(bluetoothDevice.getAddress())) {
+                mScanning = false;
                 mBtAdapter.stopLeScan(this);
                 Log.d(TAG, String.format("Found Sphero: %s, %d", bluetoothDevice.getAddress(), rssi));
                 mDiscoveredSpheroAddresses.add(bluetoothDevice.getAddress());
@@ -70,6 +82,11 @@ public class ScanActivity extends Activity implements BluetoothAdapter.LeScanCal
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("spheroAddress", bluetoothDevice.getAddress());
                 setResult(RESULT_OK, resultIntent);
+
+                getSharedPreferences("SpheroMiniDrive", Context.MODE_PRIVATE).edit()
+                        .putString("spheroAddress", bluetoothDevice.getAddress()).apply();
+
+                startActivity(new Intent(this, MainActivity.class));
                 finish();
             }
         }

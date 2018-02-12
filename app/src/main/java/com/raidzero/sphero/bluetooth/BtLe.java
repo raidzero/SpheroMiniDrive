@@ -269,7 +269,7 @@ public class BtLe {
             try {
                 while (!commandExecutor.isShutdown()) {
                     // grab command off queue
-                    if (commandQueue.size() > 0 && !isDeviceBusy()) {
+                    if (!commandQueue.isEmpty() && !isDeviceBusy()) {
                         BtLeCommand command = commandQueue.take();
                         switch (command.commandType) {
                             case WRITE_CHARACTERISTIC:
@@ -295,7 +295,9 @@ public class BtLe {
                                 break;
                         }
                     } else {
-                        if (commandQueue.size() == 0 && shutDownWhenDone) {
+                        if (commandQueue.isEmpty() && shutDownWhenDone) {
+                            // give the BT commands time to get sent
+                            try { Thread.sleep(200); } catch (Exception e) {}
                             stop();
                         }
                     }

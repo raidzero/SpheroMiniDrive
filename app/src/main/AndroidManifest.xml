@@ -12,7 +12,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.raidzero.sphero.activity.MainActivity"
+            android:name="com.raidzero.sphero.activity.ScanActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden">
@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.ScanActivity" />
+        <activity android:name=".activity.MainActivity" />
     </application>
 
 </manifest>

@@ -52,6 +52,15 @@ class BtLeCommand {
         return cmd;
     }
 
+    static BtLeCommand createWriteCommand1c(byte[] data, int duration) {
+        BtLeCommand cmd = BtLeCommand.createWriteCommand(
+                Constants.UUID_SERVICE_COMMAND,
+                Constants.UUID_CHARACTERISTIC_HANDLE_1C,
+                data);
+        cmd.duration = duration;
+        return cmd;
+    }
+
     static BtLeCommand createSubscribeCommand(UUID service, UUID characteristic) {
         BtLeCommand command = new BtLeCommand();
         command.commandType = CommandType.SUBSCRIBE_CHARACTERISTIC_NOTIFICATIONS;

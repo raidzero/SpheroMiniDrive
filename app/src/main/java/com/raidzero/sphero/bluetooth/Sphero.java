@@ -71,32 +71,32 @@ public class Sphero implements BtLe.BtLeListener {
 
     private void writeCommonOnes() {
         // magic numbers to initialize the sphero
-        sendCommand("8d:0a:13:0d:00:d5:d8");
-        sendCommand("8d:0a:13:0d:01:d4:d8");
-        sendCommand("8d:0a:11:06:04:da:d8");
-        sendCommand("8d:0a:13:10:05:cd:d8");
-        sendCommand("8d:0a:13:04:06:ab:50:d8");
-        sendCommand("8d:0a:13:1e:07:bd:d8");
-        sendCommand("8d:0a:11:00:08:dc:d8");
-        sendCommand("8d:0a:13:1e:09:bb:d8");
-        sendCommand("8d:0a:13:1e:0a:ba:d8");
-        sendCommand("8d:0a:11:06:0b:d3:d8");
-        sendCommand("8d:0a:1f:27:0c:a3:d8");
-        sendCommand("8d:0a:11:12:0d:c5:d8");
-        sendCommand("8d:0a:11:28:0e:ae:d8");
-        sendCommand("8d:0a:13:10:0f:c3:d8");
-        sendCommand("8d:0a:13:04:10:ce:d8");
-        sendCommand("8d:0a:13:10:11:c1:d8");
-        sendCommand("8d:0a:13:04:12:cc:d8");
-        sendCommand("8d:0a:13:10:13:bf:d8");
-        sendCommand("8d:0a:13:04:14:ca:d8");
-        sendCommand("8d:0a:13:10:15:bd:d8");
-        sendCommand("8d:0a:13:04:16:c8:d8");
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x0d, (byte) 0x00, (byte) 0xd5, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x0d, (byte) 0x01, (byte) 0xd4, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x11, (byte) 0x06, (byte) 0x04, (byte) 0xda, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x10, (byte) 0x05, (byte) 0xcd, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x04, (byte) 0x06, (byte) 0xab, (byte) 0x50, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x1e, (byte) 0x07, (byte) 0xbd, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x11, (byte) 0x00, (byte) 0x08, (byte) 0xdc, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x1e, (byte) 0x09, (byte) 0xbb, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x1e, (byte) 0x0a, (byte) 0xba, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x11, (byte) 0x06, (byte) 0x0b, (byte) 0xd3, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x1f, (byte) 0x27, (byte) 0x0c, (byte) 0xa3, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x11, (byte) 0x12, (byte) 0x0d, (byte) 0xc5, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x11, (byte) 0x28, (byte) 0x0e, (byte) 0xae, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x10, (byte) 0x0f, (byte) 0xc3, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x04, (byte) 0x10, (byte) 0xce, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x10, (byte) 0x11, (byte) 0xc1, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x04, (byte) 0x12, (byte) 0xcc, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x10, (byte) 0x13, (byte) 0xbf, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x04, (byte) 0x14, (byte) 0xca, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x10, (byte) 0x15, (byte) 0xbd, (byte) 0xd8});
+        sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x04, (byte) 0x16, (byte) 0xc8, (byte) 0xd8});
     }
 
     private void mainLedRgb(byte red, byte green, byte blue) {
         Log.d(TAG, "mainLedRgb()");
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRgbCommand(red, green, blue)));
+        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRgbCommand(red, green, blue), 0));
     }
 
     private void mainLedRgb(byte red, byte green, byte blue, int duration) {
@@ -128,18 +128,13 @@ public class Sphero implements BtLe.BtLeListener {
 
     public void rearLed(boolean on) {
         Log.d(TAG, "rearLed()");
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRearLedCommand(on)));
+        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRearLedCommand(on), 0));
     }
 
     // left & right can be -4095 to 4095
     public void rawMotor(int left, int right, int duration) {
         Log.d(TAG, String.format("rawMotor(%d, %d, %d)", left, right, duration));
         mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRawMotorCommand(left, right), duration));
-    }
-
-    public void rotate(int power, int duration) {
-        Log.d(TAG, "rotate()");
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRotateCommand(power), duration));
     }
 
     public void roll(int speed, int heading, int aim) {
@@ -151,18 +146,22 @@ public class Sphero implements BtLe.BtLeListener {
         // stop motors
         rawMotor(0,0, 0);
 
-        mBtLe.clearCommandQueue();
-        mBtLe.prepareToShutDown();
+        clearCommands();
 
-        // send disconnection commands. not sure what they should be
-        List<String> disconnectStrings = SpheroCommand.createDisconnectStrings();
-        for (String str : disconnectStrings) {
-            mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(str, 0));
+        List<byte[]> disconnectCommands = SpheroCommand.createDisconnectCommands();
+        for (byte[] cmd : disconnectCommands) {
+            mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(cmd, 0));
         }
+
+        mBtLe.prepareToShutDown();
     }
 
     private void sendCommand(String cmd) {
         // tshark -r 20180202-mini-connect-quit.log -2 -O btatt -R "btatt.opcode == 0x12" | grep Value | grep -o "8d0a1a0e.*$" | sed -e 's/\(..\)/\1:/g' | sed 's/:$//' | sed 's/^/sendCommand("/g' | sed 's/$/")/g'
+        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(cmd, 0));
+    }
+
+    private void sendCommand(byte[] cmd) {
         mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(cmd, 0));
     }
 

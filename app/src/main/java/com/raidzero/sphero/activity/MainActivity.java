@@ -110,34 +110,15 @@ public class MainActivity extends Activity implements
         super.onResume();
         connectingOverlay.setVisibility(View.VISIBLE);
         driveControls.setVisibility(View.GONE);
-        if (sphero != null) {
-            sphero.disconnect();
-        }
 
-        if (savedSpheroAddress != null) {
-            connectToSphero();
-        } else {
-            startActivityForResult(new Intent(this, ScanActivity.class), SCAN_ACTIVITY_REQUEST_CODE);
-        }
+        connectToSphero();
     }
 
     private void connectToSphero() {
         sphero = new Sphero(this, adapter.getRemoteDevice(savedSpheroAddress), this);
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (sphero != null) {
-            ledProcessor.stop();
-            joystickProcessor.stop();
-            sphero.disconnect();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    private void disconnectFromSphero() {
         if (sphero != null) {
             if (ledProcessor != null) {
                 ledProcessor.stop();
@@ -147,23 +128,15 @@ public class MainActivity extends Activity implements
             }
 
             sphero.disconnect();
+            sphero = null;
         }
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case SCAN_ACTIVITY_REQUEST_CODE:
-                if (resultCode == RESULT_OK) {
-                    String spheroAddress = data.getStringExtra("spheroAddress");
-                    prefs.edit().putString("spheroAddress", spheroAddress).apply();
-                    savedSpheroAddress = spheroAddress;
-                    connectToSphero();
-                } else {
-                    Toast.makeText(this, getString(R.string.scan_no_spheros_found), Toast.LENGTH_SHORT).show();
-                }
-                break;
-        }
+    protected void onPause() {
+        super.onPause();
+
+        disconnectFromSphero();
     }
 
     @Override
@@ -270,5 +243,11 @@ public class MainActivity extends Activity implements
     public void onColorChanged(int newColor) {
         prefs.edit().putInt("ledColor", newColor).apply();
         ledProcessor.setLedColor(newColor);
+    }
+
+    @Override
+    public void onBackPressed() {
+        disconnectFromSphero();
+        finishAffinity();
     }
 }

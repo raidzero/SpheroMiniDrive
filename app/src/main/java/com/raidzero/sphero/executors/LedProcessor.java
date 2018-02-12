@@ -81,7 +81,7 @@ public class LedProcessor {
                                 try { Thread.sleep(100); } catch (Exception e) {}
                             }
 
-                            if (modeChanged) {
+                            if (modeChanged || !running) {
                                 modeChanged = false;
                                 break outerLoop;
                             }
@@ -110,12 +110,12 @@ public class LedProcessor {
                                         rgbColor[0], rgbColor[1], rgbColor[2])), 0);
                                 try { Thread.sleep(40); } catch (Exception e) {}
 
-                                if (modeChanged) {
+                                if (modeChanged || !running) {
                                     modeChanged = false;
                                     break outerLoop;
                                 }
                             }
-                            if (modeChanged) {
+                            if (modeChanged || !running) {
                                 modeChanged = false;
                                 break outerLoop;
                             }
