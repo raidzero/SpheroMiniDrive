@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" >
+
+    <TextView
+        android:id="@+id/color_value"
+        tools:text="#00ff00"
+        tools:background="#00ff00"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:gravity="center"
+        android:textAppearance="@android:style/TextAppearance.Large"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:layout_marginBottom="10dp"/>
+
+    <SeekBar
+        android:id="@+id/seek_red"
+        android:max="255"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/color_value"
+        android:paddingBottom="10dp"
+        android:minHeight="5dp"
+        android:maxHeight="5dp"
+        android:thumb="@drawable/thumb_red"
+        android:progressDrawable="@drawable/seek_red" />
+
+    <SeekBar
+        android:id="@+id/seek_green"
+        android:max="255"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="5dp"
+        android:maxHeight="5dp"
+        android:thumb="@drawable/thumb_green"
+        android:progressDrawable="@drawable/seek_green"
+        android:paddingBottom="10dp"
+        android:layout_below="@id/seek_red"
+        tools:progress="255"/>
+
+    <SeekBar
+        android:id="@+id/seek_blue"
+        android:max="255"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="5dp"
+        android:maxHeight="5dp"
+        android:progressDrawable="@drawable/seek_blue"
+        android:thumb="@drawable/thumb_blue"
+        android:paddingBottom="10dp"
+        android:layout_below="@id/seek_green"/>
+
+</merge>

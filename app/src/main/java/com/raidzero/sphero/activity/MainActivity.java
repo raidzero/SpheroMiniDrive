@@ -12,7 +12,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -23,16 +22,15 @@ import com.raidzero.sphero.R;
 import com.raidzero.sphero.bluetooth.Sphero;
 import com.raidzero.sphero.executors.JoystickProcessor;
 import com.raidzero.sphero.executors.LedProcessor;
-import com.raidzero.sphero.fragments.ColorPickerFragment;
+import com.raidzero.sphero.view.RgbSliderView;
 
 
 public class MainActivity extends Activity implements
         Sphero.SpheroListener,
         SeekBar.OnSeekBarChangeListener,
         AdapterView.OnItemSelectedListener,
-        View.OnClickListener,
         JoystickProcessor.JoystickInterface,
-        ColorPickerFragment.ColorPickerListener {
+        RgbSliderView.RgbSliderListener {
     private static final String TAG = "MainActivity";
 
     // main players
@@ -56,7 +54,8 @@ public class MainActivity extends Activity implements
     Spinner ledMode;
     TextView maxSpeedPercentage;
     TextView battery;
-    Button selectColor;
+    RgbSliderView rgbView;
+    LinearLayout ledColorContainer;
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int value, boolean fromUser) {
@@ -93,12 +92,13 @@ public class MainActivity extends Activity implements
 
         driveControls = (LinearLayout) findViewById(R.id.driveControls);
         connectingOverlay = (LinearLayout) findViewById(R.id.connectingDisplay);
+        ledColorContainer = (LinearLayout) driveControls.findViewById(R.id.ledColorContainer);
 
         maxSpeedBar = (SeekBar) findViewById(R.id.maxSpeedBar);
         ledMode = (Spinner) findViewById(R.id.ledMode);
+        rgbView = (RgbSliderView) findViewById(R.id.rgbSliders);
         maxSpeedPercentage = (TextView) findViewById(R.id.maxSpeedPercentage);
         battery = (TextView) findViewById(R.id.battery);
-        selectColor = (Button) findViewById(R.id.btn_color_select);
 
         maxSpeedBar.setProgress(prefs.getInt("maxSpeed", 127));
         jsData.maxSpeed = prefs.getInt("maxSpeed", 127);
@@ -213,13 +213,15 @@ public class MainActivity extends Activity implements
                 maxSpeedBar.setOnSeekBarChangeListener(MainActivity.this);
                 ledMode.setOnItemSelectedListener(MainActivity.this);
                 ledMode.setSelection(prefLedMode);
-                selectColor.setOnClickListener(MainActivity.this);
+
+                rgbView.setOnColorChangeListener(MainActivity.this);
+                rgbView.setColor(prefLedColor);
             }
         });
     }
 
     @Override
-    public boolean dispatchGenericMotionEvent (MotionEvent ev) {
+    public boolean dispatchGenericMotionEvent(MotionEvent ev) {
         jsData.lX = ev.getAxisValue(MotionEvent.AXIS_X);
         jsData.lY = ev.getAxisValue(MotionEvent.AXIS_Y);
 
@@ -247,15 +249,15 @@ public class MainActivity extends Activity implements
 
             ledProcessor.setLedMode(newMode);
 
-            if (hideColorButtonForMode(newMode)) {
-                selectColor.setVisibility(View.GONE);
+            if (hideColorSelectorForMode(newMode)) {
+                ledColorContainer.setVisibility(View.GONE);
             } else {
-                selectColor.setVisibility(View.VISIBLE);
+                ledColorContainer.setVisibility(View.VISIBLE);
             }
         }
     }
 
-    private boolean hideColorButtonForMode(LedProcessor.LedMode mode) {
+    private boolean hideColorSelectorForMode(LedProcessor.LedMode mode) {
         return mode == LedProcessor.LedMode.FADE_RGB || mode == LedProcessor.LedMode.STROBE_RANDOM;
     }
 
@@ -265,22 +267,8 @@ public class MainActivity extends Activity implements
     }
 
     @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.btn_color_select:
-                ColorPickerFragment f = new ColorPickerFragment();
-                f.show(getFragmentManager(), "colorPicker");
-        }
-    }
-
-    @Override
-    public void onColorChange(int newColor) {
+    public void onColorChanged(int newColor) {
         prefs.edit().putInt("ledColor", newColor).apply();
         ledProcessor.setLedColor(newColor);
-    }
-
-    @Override
-    public int getCurrentColor() {
-        return prefs.getInt("ledColor", Color.GREEN);
     }
 }

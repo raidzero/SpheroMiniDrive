@@ -3,13 +3,14 @@
 
     <string name="app_name">SpheroMiniDrive</string>
     <string name="label_connecting">Connecting&#8230;</string>
-    <string name="scan_no_spheros_found">No Sphero Minis detected.</string>
+    <string name="scan_no_spheros_found">No Sphero Mini detected.</string>
     <string name="sphero_connected">%1$s connected.</string>
 
     <string name="label_max_speed_slider">Maximum Speed</string>
     <string name="label_led_mode">LED Mode</string>
-    <string name="label_battery">Battery level: </string>
-    <string name="label_select_color">Select color</string>
+    <string name="label_battery">Battery Level: </string>
+    <string name="label_select_color">LED Color</string>
+    <string name="off">Off</string>
 
     <string-array name="ledModes">
         <item>RGB Fade</item>

@@ -22,7 +22,7 @@ class BtLeCommand {
     UUID characteristic;
     byte[] data;
     CommandType commandType;
-    int duration = 50;
+    int duration = 0;
 
     static BtLeCommand createWriteCommand(UUID service, UUID characteristic, byte[] data) {
         BtLeCommand command = new BtLeCommand();

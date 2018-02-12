@@ -49,8 +49,6 @@ public class Sphero implements BtLe.BtLeListener {
                 Constants.UUID_SERVICE_INITIALIZE,
                 Constants.UUID_CHARACTERISTIC_USETHEFORCE,
                 hexStringToBytes(Constants.STR_USE_THE_FORCE_BYTES));
-        command.duration = 50;
-
         mBtLe.addCommandToQueue(command);
     }
 
