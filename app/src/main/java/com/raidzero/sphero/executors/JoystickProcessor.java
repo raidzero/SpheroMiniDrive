@@ -71,12 +71,12 @@ public class JoystickProcessor {
 
                         if (leftStickMoving() || rightStickMoving()) {
                             Log.d(TAG, "joystick motion. sending motor command");
-                            sphero.rawMotor(getLeftPower(), getRightPower(), 0);
+                            sphero.rawMotor(getLeftPower(), getRightPower());
                             movementStopped = false;
                         } else {
                             // stop the sphero motors, but only if they are not already stopped
                             if (!movementStopped) {
-                                sphero.rawMotor(0, 0, 0);
+                                sphero.rawMotor(0, 0);
                                 movementStopped = true;
                             }
                         }
@@ -98,13 +98,13 @@ public class JoystickProcessor {
                         }
                         if (rightStickAiming()) {
                             aim = getAim();
-                            sphero.rearLed(true, 0);
+                            sphero.rearLed(true);
                             sphero.roll(0, aimInt, 0);
 
                             rearLedOff = false;
                         } else {
                             if (!rearLedOff) {
-                                sphero.rearLed(false, 0);
+                                sphero.rearLed(false);
                                 rearLedOff = true;
                             }
                         }

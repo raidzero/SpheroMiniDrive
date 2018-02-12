@@ -11,6 +11,7 @@ import com.raidzero.sphero.global.Constants;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+
 import static com.raidzero.sphero.global.ByteUtils.hexStringToBytes;
 
 /**
@@ -94,78 +95,45 @@ public class Sphero implements BtLe.BtLeListener {
         sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x04, (byte) 0x16, (byte) 0xc8, (byte) 0xd8});
     }
 
-    private void mainLedRgb(byte red, byte green, byte blue) {
-        Log.d(TAG, "mainLedRgb()");
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRgbCommand(red, green, blue), 0));
-    }
-
-    private void mainLedRgb(byte red, byte green, byte blue, int duration) {
-        Log.d(TAG, "mainLedRgb()");
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRgbCommand(red, green, blue), duration));
-    }
-
     public void mainLedRgb(int color) {
-        int red = Color.red(color);
-        int green = Color.green(color);
-        int blue = Color.blue(color);
+        short red = (short) Color.red(color);
+        short green = (short) Color.green(color);
+        short blue = (short) Color.blue(color);
 
-        mainLedRgb((byte) red, (byte) green, (byte) blue);
-    }
-
-    public void mainLedRgb(int color, int duration) {
-        int red = Color.red(color);
-        int green = Color.green(color);
-        int blue = Color.blue(color);
-
-        mainLedRgb((byte) red, (byte) green, (byte) blue, duration);
-    }
-
-
-    public void rearLed(boolean on, int duration) {
-        Log.d(TAG, "rearLed()");
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRearLedCommand(on), duration));
+        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRgbCommand(red, green, blue)));
     }
 
     public void rearLed(boolean on) {
         Log.d(TAG, "rearLed()");
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRearLedCommand(on), 0));
+        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRearLedCommand(on)));
     }
 
     // left & right can be -4095 to 4095
-    public void rawMotor(int left, int right, int duration) {
-        Log.d(TAG, String.format("rawMotor(%d, %d, %d)", left, right, duration));
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRawMotorCommand(left, right), duration));
+    public void rawMotor(int left, int right) {
+        Log.d(TAG, String.format("rawMotor(%d, %d)", left, right));
+        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRawMotorCommand(left, right)));
     }
 
     public void roll(int speed, int heading, int aim) {
         Log.d(TAG, "roll()");
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRollCommand(speed, heading, aim), 0));
+        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRollCommand(speed, heading, aim)));
     }
 
     public void disconnect() {
         // stop motors
-        rawMotor(0,0, 0);
+        rawMotor(0,0);
 
         clearCommands();
 
         List<byte[]> disconnectCommands = SpheroCommand.createDisconnectCommands();
         for (byte[] cmd : disconnectCommands) {
-            mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(cmd, 0));
+            mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(cmd));
         }
 
         mBtLe.prepareToShutDown();
     }
 
-    private void sendCommand(String cmd) {
-        // tshark -r 20180202-mini-connect-quit.log -2 -O btatt -R "btatt.opcode == 0x12" | grep Value | grep -o "8d0a1a0e.*$" | sed -e 's/\(..\)/\1:/g' | sed 's/:$//' | sed 's/^/sendCommand("/g' | sed 's/$/")/g'
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(cmd, 0));
-    }
-
     private void sendCommand(byte[] cmd) {
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(cmd, 0));
-    }
-
-    private void sendCommand(String cmd, int duration) {
         mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(cmd));
     }
 
@@ -210,5 +178,6 @@ public class Sphero implements BtLe.BtLeListener {
     @Override
     public void onCommandProcessorFinish() {
         mListener.onSpheroDisconnected();
+        mBtLe.disconnect();
     }
 }

@@ -61,10 +61,10 @@ public class LedProcessor {
                             color = getRandomColor();
                         }
 
-                        sphero.mainLedRgb(color, 0);
+                        sphero.mainLedRgb(color);
                         try {Thread.sleep(100);} catch (Exception e) {}
 
-                        sphero.mainLedRgb(Color.parseColor("#ff000000"), 0);
+                        sphero.mainLedRgb(Color.parseColor("#ff000000"));
                         try {Thread.sleep(100);} catch (Exception e) {}
 
                         break;
@@ -107,7 +107,7 @@ public class LedProcessor {
                                 rgbColor[incColour] += 1;
 
                                 sphero.mainLedRgb(Color.parseColor(String.format("#ff%02x%02x%02x",
-                                        rgbColor[0], rgbColor[1], rgbColor[2])), 0);
+                                        rgbColor[0], rgbColor[1], rgbColor[2])));
                                 try { Thread.sleep(40); } catch (Exception e) {}
 
                                 if (modeChanged || !running) {
@@ -123,7 +123,7 @@ public class LedProcessor {
                         break;
                     case SOLID:
                         if (!solidColorSet) {
-                            sphero.mainLedRgb(ledColor, 0);
+                            sphero.mainLedRgb(ledColor);
                             solidColorSet = true;
                         }
 

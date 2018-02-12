@@ -1,17 +1,9 @@
 package com.raidzero.sphero.bluetooth;
 
-import android.util.Log;
-
-import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static com.raidzero.sphero.global.ByteUtils.bytesToString;
-import static com.raidzero.sphero.global.ByteUtils.hexStringToBytes;
 
 /**
  * Created by raidzero on 1/26/18.

@@ -11,8 +11,6 @@ import android.util.Log;
 
 import com.raidzero.sphero.global.Constants;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +18,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static com.raidzero.sphero.global.ByteUtils.bytesToString;
-import static com.raidzero.sphero.global.ByteUtils.hexStringToBytes;
 
 /**
  * Created by raidzero on 1/21/18.
@@ -38,7 +35,6 @@ public class BtLe {
     private boolean mConnected;
     private boolean mTxBusy = false;
     private boolean shutDownWhenDone = false;
-    private int mWaitLength;
 
     ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
     BlockingQueue<BtLeCommand> commandQueue = new LinkedBlockingQueue<BtLeCommand>();
@@ -159,7 +155,6 @@ public class BtLe {
     }
 
     boolean writeToServiceCharacteristic(BtLeCommand command) {
-        mWaitLength = command.duration;
         return writeToServiceCharacteristic(
                 command.service,
                 command.characteristic,
@@ -229,13 +224,6 @@ public class BtLe {
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
             Log.d(TAG, "onCharacteristicWrite(): " + bytesToString(characteristic.getValue()));
-            if (mWaitLength > 0) {
-                try {
-                    Thread.sleep(mWaitLength); // wait however long before allowing the next command to be sent
-                } catch (Exception e) {
-                    // ignored
-                }
-            }
             mTxBusy = false;
         }
 
