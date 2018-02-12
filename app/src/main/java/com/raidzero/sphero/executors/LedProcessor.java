@@ -70,36 +70,29 @@ public class LedProcessor {
                         break;
                     case BREATHE:
                         solidColorSet = false;
-
-                        for (int breatheColor : createBreatheSteps(ledColor, 5)) {
+                        int steps = 5;
+                        for (int breatheColor : createBreatheSteps(ledColor, steps)) {
                             sphero.mainLedRgb(breatheColor);
 
-                            try { Thread.sleep(100); } catch (Exception e) {}
+                            // if LED is off, wait a bit before the next breath
+                            if (breatheColor == Color.BLACK) {
+                                try { Thread.sleep(500); } catch (Exception e) {}
+                            } else {
+                                try { Thread.sleep(100); } catch (Exception e) {}
+                            }
 
                             if (modeChanged) {
                                 modeChanged = false;
                                 break outerLoop;
                             }
                         }
-                        /*
-                        for (int g = 0; g < 256; g += 20) {
-                            sphero.mainLedRgb(Color.parseColor(String.format("#ff00%02x00", g)), 0);
-
-                        }
-                        for (int g = 255; g > 0; g -= 20) {
-
-                            sphero.mainLedRgb(Color.parseColor(String.format("#ff00%02x00", g)), 0);
-                            try { Thread.sleep(100); } catch (Exception e) {}
-                            if (modeChanged) {
-                                modeChanged = false;
-                                break outerLoop;
-                            }
-                        }*/
                         break;
                     case FADE_RGB:
                         solidColorSet = false;
 
                         int [] rgbColor = new int[3];
+
+                        // start with whatever color was previously set
                         rgbColor[0] = 255;
                         rgbColor[1] = 0;
                         rgbColor[2] = 0;
