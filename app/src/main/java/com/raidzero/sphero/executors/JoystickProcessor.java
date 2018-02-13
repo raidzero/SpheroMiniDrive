@@ -113,7 +113,7 @@ public class JoystickProcessor {
                 }
 
                 try {
-                    // only poll for joystick activity 20 times per second
+                    // "only" poll for joystick activity 20 times per second
                     Thread.sleep(50);
                 } catch (Exception e) {
                     //

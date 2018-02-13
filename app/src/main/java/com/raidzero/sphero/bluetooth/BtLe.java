@@ -12,10 +12,10 @@ import android.util.Log;
 import com.raidzero.sphero.global.Constants;
 
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import static com.raidzero.sphero.global.ByteUtils.bytesToString;
 
@@ -36,11 +36,12 @@ public class BtLe {
     private boolean mTxBusy = false;
     private boolean shutDownWhenDone = false;
 
-    ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
-    BlockingQueue<BtLeCommand> commandQueue = new LinkedBlockingQueue<BtLeCommand>();
-    CommandProcessor commandProcessor = new CommandProcessor();
+    private ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
+    private BlockingDeque<BtLeCommand> commandQueue = new LinkedBlockingDeque<BtLeCommand>();
+    private CommandProcessor commandProcessor = new CommandProcessor();
 
     private BtLeListener mListener;
+
     public interface BtLeListener {
         void onServicesDiscoverySuccess();
         void onServicesDiscoveryFail();
@@ -57,7 +58,19 @@ public class BtLe {
     }
 
     public void addCommandToQueue(BtLeCommand command) {
-        commandQueue.add(command);
+        try {
+            commandQueue.put(command);
+        } catch (InterruptedException e) {
+            Log.e(TAG, "commandQueue insertion interrupted");
+        }
+    }
+
+    public void addCommandToQueueHead(BtLeCommand command) {
+        try {
+            commandQueue.putFirst(command);
+        } catch (InterruptedException e) {
+            Log.e(TAG, "commandQueue insertion interrupted");
+        }
     }
 
     void setListener(BtLeListener listener) {
@@ -68,13 +81,13 @@ public class BtLe {
         if (mServicesDiscovered) {
             BluetoothGattService s = mGatt.getService(service);
             if (s == null) {
-                Log.d(TAG, "Service not found: " + service);
+                Log.e(TAG, "Service not found: " + service);
                 return false;
             }
 
             BluetoothGattCharacteristic c = s.getCharacteristic(characteristic);
             if (c == null) {
-                Log.d(TAG, "Characteristic not found: " + characteristic);
+                Log.e(TAG, "Characteristic not found: " + characteristic);
                 return false;
             }
 
@@ -129,25 +142,23 @@ public class BtLe {
         if (mServicesDiscovered) {
             BluetoothGattService s = mGatt.getService(service);
             if (s == null) {
-                Log.d(TAG, "Service not found: " + service);
+                Log.e(TAG, "Service not found: " + service);
                 return false;
             }
 
             BluetoothGattCharacteristic c = s.getCharacteristic(characteristic);
             if (c == null) {
-                Log.d(TAG, "Characteristic not found: " + characteristic);
+                Log.e(TAG, "Characteristic not found: " + characteristic);
                 return false;
             }
 
             c.setValue(data);
 
-            Log.d(TAG, "writeToServiceCharacteristic(): " + service + ": " + characteristic);
             Log.d(TAG, "writeData: " + bytesToString(data));
 
             mTxBusy = true;
             boolean success = mGatt.writeCharacteristic(c);
 
-            Log.d(TAG, "success: " + success);
             return success;
         }
 
@@ -223,7 +234,11 @@ public class BtLe {
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
-            Log.d(TAG, "onCharacteristicWrite(): " + bytesToString(characteristic.getValue()));
+            try {
+                Thread.sleep(5); // wait a bit before next command can be processed
+            } catch (Exception e) {
+                // ignored
+            }
             mTxBusy = false;
         }
 
@@ -290,8 +305,9 @@ public class BtLe {
                         }
                     }
 
+                    // wait a bit before processing the next command in the queue
                     try {
-                        Thread.sleep(10);
+                        Thread.sleep(5);
                     } catch (Exception e) {
 
                     }

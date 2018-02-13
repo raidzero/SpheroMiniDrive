@@ -95,6 +95,7 @@ public class Sphero implements BtLe.BtLeListener {
         sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x04, (byte) 0x16, (byte) 0xc8, (byte) 0xd8});
     }
 
+    // main LED commands get sent to end of the queue since they are lower priority than rear LED & movement commands
     public void mainLedRgb(int color) {
         short red = (short) Color.red(color);
         short green = (short) Color.green(color);
@@ -105,18 +106,18 @@ public class Sphero implements BtLe.BtLeListener {
 
     public void rearLed(boolean on) {
         Log.d(TAG, "rearLed()");
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRearLedCommand(on)));
+        mBtLe.addCommandToQueueHead(BtLeCommand.createWriteCommand1c(SpheroCommand.createRearLedCommand(on)));
     }
 
     // left & right can be -4095 to 4095
     public void rawMotor(int left, int right) {
         Log.d(TAG, String.format("rawMotor(%d, %d)", left, right));
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRawMotorCommand(left, right)));
+        mBtLe.addCommandToQueueHead(BtLeCommand.createWriteCommand1c(SpheroCommand.createRawMotorCommand(left, right)));
     }
 
     public void roll(int speed, int heading, int aim) {
         Log.d(TAG, "roll()");
-        mBtLe.addCommandToQueue(BtLeCommand.createWriteCommand1c(SpheroCommand.createRollCommand(speed, heading, aim)));
+        mBtLe.addCommandToQueueHead(BtLeCommand.createWriteCommand1c(SpheroCommand.createRollCommand(speed, heading, aim)));
     }
 
     public void disconnect() {

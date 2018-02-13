@@ -99,8 +99,10 @@ public class MainActivity extends Activity implements
         maxSpeedPercentage = (TextView) findViewById(R.id.maxSpeedPercentage);
         battery = (TextView) findViewById(R.id.battery);
 
-        maxSpeedBar.setProgress(prefs.getInt("maxSpeed", 127));
-        jsData.maxSpeed = prefs.getInt("maxSpeed", 127);
+        int maxSpeed = prefs.getInt("maxSpeed", 127);
+        maxSpeedBar.setProgress(maxSpeed);
+        maxSpeedPercentage.setText(String.valueOf((int) ((maxSpeed / 255.0) * 100)) + "%");
+        jsData.maxSpeed = maxSpeed;
         adapter = BluetoothAdapter.getDefaultAdapter();
     }
 
@@ -182,9 +184,9 @@ public class MainActivity extends Activity implements
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                ledMode.setSelection(prefLedMode);
                 maxSpeedBar.setOnSeekBarChangeListener(MainActivity.this);
                 ledMode.setOnItemSelectedListener(MainActivity.this);
-                ledMode.setSelection(prefLedMode);
 
                 rgbView.setOnColorChangeListener(MainActivity.this);
                 rgbView.setColor(prefLedColor);
@@ -216,7 +218,6 @@ public class MainActivity extends Activity implements
     public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
         if (ledProcessor != null) {
             LedProcessor.LedMode newMode = LedProcessor.LedMode.values()[position];
-
             prefs.edit().putInt("ledMode", position).apply();
 
             ledProcessor.setLedMode(newMode);
@@ -230,7 +231,8 @@ public class MainActivity extends Activity implements
     }
 
     private boolean hideColorSelectorForMode(LedProcessor.LedMode mode) {
-        return mode == LedProcessor.LedMode.FADE_RGB || mode == LedProcessor.LedMode.STROBE_RANDOM;
+        return mode == LedProcessor.LedMode.FADE_RGB || mode == LedProcessor.LedMode.STROBE_RANDOM
+                || mode == LedProcessor.LedMode.BREATHE_RANDOM;
     }
 
     @Override
@@ -241,7 +243,9 @@ public class MainActivity extends Activity implements
     @Override
     public void onColorChanged(int newColor) {
         prefs.edit().putInt("ledColor", newColor).apply();
-        ledProcessor.setLedColor(newColor);
+        if (ledProcessor != null) {
+            ledProcessor.setLedColor(newColor);
+        }
     }
 
     @Override

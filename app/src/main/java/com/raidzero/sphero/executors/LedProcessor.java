@@ -1,11 +1,13 @@
 package com.raidzero.sphero.executors;
 
 import android.graphics.Color;
+import android.util.Log;
 
 import com.raidzero.sphero.bluetooth.Sphero;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -16,6 +18,8 @@ import java.util.concurrent.Executors;
  */
 
 public class LedProcessor {
+    private static final String TAG = "LedProcessor";
+
     private LedThread thread = new LedThread();
     private ExecutorService service = Executors.newSingleThreadExecutor();
     private Sphero sphero;
@@ -23,6 +27,7 @@ public class LedProcessor {
     public enum LedMode {
         FADE_RGB,
         BREATHE,
+        BREATHE_RANDOM,
         SOLID,
         STROBE,
         STROBE_RANDOM,
@@ -62,20 +67,27 @@ public class LedProcessor {
                         }
 
                         sphero.mainLedRgb(color);
-                        try {Thread.sleep(100);} catch (Exception e) {}
+                        try {
+                            Thread.sleep(100); } catch (Exception e) {}
 
                         sphero.mainLedRgb(Color.parseColor("#ff000000"));
-                        try {Thread.sleep(100);} catch (Exception e) {}
+                        try {
+                            Thread.sleep(100); } catch (Exception e) {}
 
                         break;
                     case BREATHE:
+                    case BREATHE_RANDOM:
                         solidColorSet = false;
                         int steps = 5;
-                        for (int breatheColor : createBreatheSteps(ledColor, steps)) {
-                            sphero.mainLedRgb(breatheColor);
+                        int breatheColor = ledColor;
+                        if (mode == LedMode.BREATHE_RANDOM) {
+                            breatheColor = getRandomColor();
+                        }
+                        for (int stepColor : createBreatheSteps(breatheColor, steps)) {
+                            sphero.mainLedRgb(stepColor);
 
                             // if LED is off, wait a bit before the next breath
-                            if (breatheColor == Color.BLACK) {
+                            if (stepColor == Color.BLACK) {
                                 try { Thread.sleep(500); } catch (Exception e) {}
                             } else {
                                 try { Thread.sleep(100); } catch (Exception e) {}
@@ -83,6 +95,7 @@ public class LedProcessor {
 
                             if (modeChanged || !running) {
                                 modeChanged = false;
+                                sphero.clearCommands();
                                 break outerLoop;
                             }
                         }
@@ -90,9 +103,8 @@ public class LedProcessor {
                     case FADE_RGB:
                         solidColorSet = false;
 
-                        int [] rgbColor = new int[3];
+                        int[] rgbColor = new int[3];
 
-                        // start with whatever color was previously set
                         rgbColor[0] = 255;
                         rgbColor[1] = 0;
                         rgbColor[2] = 0;
@@ -101,7 +113,7 @@ public class LedProcessor {
                             int incColour = decColor == 2 ? 0 : decColor + 1;
 
                             // cross-fade the two colors.
-                            for(int i = 0; i < 255; i += 1) {
+                            for (int i = 0; i < 255; i += 1) {
 
                                 rgbColor[decColor] -= 1;
                                 rgbColor[incColour] += 1;
@@ -128,7 +140,9 @@ public class LedProcessor {
                         }
 
                         break;
+
                 }
+            // end outer loop
             }
         }
 
@@ -137,34 +151,23 @@ public class LedProcessor {
         }
 
         public void setMode(LedMode mode) {
-            modeChanged = this.mode != null && mode != this.mode;
             this.mode = mode;
-        }
-
-        public LedMode getMode() {
-            return mode;
+            modeChanged = true;
         }
 
         public void interrupt() {
             running = false;
         }
 
-        public boolean isRunning() {
-            return running;
-        }
-
-        private int getRandomColor() {
-            Random r = new Random();
-            int red = r.nextInt(256);
-            int green = r.nextInt(256);
-            int blue = r.nextInt(256);
-            String colorStr = String.format("#ff%02x%02x%02x", red, green, blue);
-            return Color.parseColor(colorStr);
+        public void resume() {
+            running = true;
         }
     }
 
     public void setLedMode(LedMode mode) {
-        thread.setMode(mode);
+        if (thread.mode != mode) {
+            thread.setMode(mode);
+        }
     }
 
     public void setLedColor(int color) {
@@ -211,6 +214,24 @@ public class LedProcessor {
         colors.addAll(faded);
 
         return colors;
+    }
+
+    private int getRandomColor() {
+        int[] colors = new int[] {
+                Color.WHITE,
+                Color.RED,
+                Color.GREEN,
+                Color.BLUE,
+                Color.YELLOW,
+                Color.CYAN,
+                Color.MAGENTA
+        };
+
+        Random r = new Random();
+        r.setSeed(new Date().getTime());
+        int colorIndex = r.nextInt(colors.length);
+
+        return colors[colorIndex];
     }
 
     private int safeIntegerDivision(int numerator, int denominator) {
