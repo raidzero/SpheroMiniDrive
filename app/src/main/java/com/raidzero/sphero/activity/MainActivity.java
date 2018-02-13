@@ -231,8 +231,10 @@ public class MainActivity extends Activity implements
     }
 
     private boolean hideColorSelectorForMode(LedProcessor.LedMode mode) {
-        return mode == LedProcessor.LedMode.FADE_RGB || mode == LedProcessor.LedMode.STROBE_RANDOM
-                || mode == LedProcessor.LedMode.BREATHE_RANDOM;
+        return mode == LedProcessor.LedMode.FADE_RGB ||
+                mode == LedProcessor.LedMode.STROBE_RANDOM ||
+                mode == LedProcessor.LedMode.BREATHE_RANDOM ||
+                mode == LedProcessor.LedMode.PULL_OVER;
     }
 
     @Override

@@ -31,6 +31,7 @@ public class LedProcessor {
         SOLID,
         STROBE,
         STROBE_RANDOM,
+        PULL_OVER,
     }
 
 
@@ -56,23 +57,37 @@ public class LedProcessor {
         @Override
         public void run() {
             running = true;
+            int loopCount = 0;
             while (running) {
+                if (loopCount > 100) {
+                    loopCount = 0;
+                }
+                loopCount++;
+
                 outerLoop: switch (mode) {
                     case STROBE:
                     case STROBE_RANDOM:
+                    case PULL_OVER:
                         solidColorSet = false;
                         int color = ledColor;
                         if (mode == LedMode.STROBE_RANDOM) {
                             color = getRandomColor();
+                        } else if (mode == LedMode.PULL_OVER) {
+                            int[] colors = new int[] { Color.RED, Color.BLUE };
+                            if (loopCount % 2 == 0) {
+                                color = colors[0];
+                            } else {
+                                color = colors[1];
+                            }
                         }
 
                         sphero.mainLedRgb(color);
                         try {
-                            Thread.sleep(100); } catch (Exception e) {}
+                            Thread.sleep(50); } catch (Exception e) {}
 
                         sphero.mainLedRgb(Color.parseColor("#ff000000"));
                         try {
-                            Thread.sleep(100); } catch (Exception e) {}
+                            Thread.sleep(50); } catch (Exception e) {}
 
                         break;
                     case BREATHE:
@@ -88,7 +103,7 @@ public class LedProcessor {
 
                             // if LED is off, wait a bit before the next breath
                             if (stepColor == Color.BLACK) {
-                                try { Thread.sleep(500); } catch (Exception e) {}
+                                try { Thread.sleep(300); } catch (Exception e) {}
                             } else {
                                 try { Thread.sleep(100); } catch (Exception e) {}
                             }
