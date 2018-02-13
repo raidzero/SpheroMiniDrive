@@ -196,8 +196,18 @@ public class MainActivity extends Activity implements
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent ev) {
-        jsData.lX = ev.getAxisValue(MotionEvent.AXIS_X);
-        jsData.lY = ev.getAxisValue(MotionEvent.AXIS_Y);
+        // dpad?
+        if (ev.getAxisValue(MotionEvent.AXIS_HAT_X) != 0) {
+            jsData.lX = ev.getAxisValue(MotionEvent.AXIS_HAT_X);
+        } else {
+            jsData.lX = ev.getAxisValue(MotionEvent.AXIS_X);
+        }
+
+        if (ev.getAxisValue(MotionEvent.AXIS_HAT_Y) != 0) {
+            jsData.lY = ev.getAxisValue(MotionEvent.AXIS_HAT_Y);
+        } else {
+            jsData.lY = ev.getAxisValue(MotionEvent.AXIS_Y);
+        }
 
         jsData.rX = ev.getAxisValue(MotionEvent.AXIS_Z);
         jsData.rY = ev.getAxisValue(MotionEvent.AXIS_RZ);

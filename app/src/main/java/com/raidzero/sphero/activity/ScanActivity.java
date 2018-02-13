@@ -79,10 +79,6 @@ public class ScanActivity extends Activity implements BluetoothAdapter.LeScanCal
                 Log.d(TAG, String.format("Found Sphero: %s, %d", bluetoothDevice.getAddress(), rssi));
                 mDiscoveredSpheroAddresses.add(bluetoothDevice.getAddress());
 
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra("spheroAddress", bluetoothDevice.getAddress());
-                setResult(RESULT_OK, resultIntent);
-
                 getSharedPreferences("SpheroMiniDrive", Context.MODE_PRIVATE).edit()
                         .putString("spheroAddress", bluetoothDevice.getAddress()).apply();
 
