@@ -76,17 +76,34 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:text="@string/label_select_color"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="10dp"
-                android:paddingBottom="10dp"/>
+                android:paddingBottom="10dp">
 
-            <com.raidzero.sphero.view.RgbSliderView
-                android:id="@+id/rgbSliders"
+                <TextView
+                    android:text="@string/label_select_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="10dp"/>
+                <TextView
+                    android:id="@+id/color_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@android:style/TextAppearance.Large"
+                    android:gravity="center"
+                    tools:background="@color/green"
+                    tools:text="#00FF00"
+                    />
+
+            </LinearLayout>
+
+            <com.raidzero.sphero.view.RgbSeekBar
+                android:id="@+id/rgbSeekBar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="50dp" />
+
         </LinearLayout>
 
         <TextView

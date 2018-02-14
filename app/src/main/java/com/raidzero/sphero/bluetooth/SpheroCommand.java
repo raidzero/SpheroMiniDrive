@@ -109,6 +109,7 @@ public class SpheroCommand {
     static List<byte[]> createDisconnectCommands() {
         /*
         just duplicate this blindly
+        // TODO: figure these out?
         writeData: 8D 0A 13 01 06 DB D8
         writeData: 8D 0A 13 02 07 D9 D8
         writeData: 8D 0A 13 03 08 D7 D8

@@ -154,8 +154,6 @@ public class BtLe {
 
             c.setValue(data);
 
-            Log.d(TAG, "writeData: " + bytesToString(data));
-
             mTxBusy = true;
             boolean success = mGatt.writeCharacteristic(c);
 
@@ -227,7 +225,6 @@ public class BtLe {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-            Log.d(TAG, "onCharacteristicRead(): " + bytesToString(characteristic.getValue()));
             mTxBusy = false;
         }
 
@@ -245,7 +242,6 @@ public class BtLe {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-            Log.d(TAG, "onCharacteristicChanged(): " + bytesToString(characteristic.getValue()));
             mListener.onCharacteristicChanged(characteristic);
             mTxBusy = false;
         }
@@ -253,14 +249,12 @@ public class BtLe {
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorRead(gatt, descriptor, status);
-            Log.d(TAG, "onDescriptorRead(): " + bytesToString(descriptor.getValue()));
             mTxBusy = false;
         }
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
-            Log.d(TAG, "onDescriptorWrite()");
             mTxBusy = false;
         }
     }
@@ -276,24 +270,12 @@ public class BtLe {
                         BtLeCommand command = commandQueue.take();
                         switch (command.commandType) {
                             case WRITE_CHARACTERISTIC:
-                                Log.d(TAG, "CommandProcessor sending write request "
-                                        + bytesToString(command.data)
-                                        + " to " + command.service + ": "
-                                        + command.characteristic
-                                        + " wait time: " + command.duration);
-
                                 writeToServiceCharacteristic(command);
                                 break;
                             case READ_CHARACTERISTIC:
-                                Log.d(TAG, "CommandProcessor sending read request"
-                                        + " to " + command.service + ": "
-                                        + command.characteristic);
                                 queryServiceCharacteristic(command);
                                 break;
                             case SUBSCRIBE_CHARACTERISTIC_NOTIFICATIONS:
-                                Log.d(TAG, "CommandProcessor sending subscribe request"
-                                        + " to " + command.service + ": "
-                                        + command.characteristic);
                                 subscribeForNotifications(command);
                                 break;
                         }

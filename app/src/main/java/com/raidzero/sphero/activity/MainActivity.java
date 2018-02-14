@@ -21,6 +21,7 @@ import com.raidzero.sphero.R;
 import com.raidzero.sphero.bluetooth.Sphero;
 import com.raidzero.sphero.executors.JoystickProcessor;
 import com.raidzero.sphero.executors.LedProcessor;
+import com.raidzero.sphero.view.RgbSeekBar;
 import com.raidzero.sphero.view.RgbSliderView;
 
 
@@ -29,7 +30,7 @@ public class MainActivity extends Activity implements
         SeekBar.OnSeekBarChangeListener,
         AdapterView.OnItemSelectedListener,
         JoystickProcessor.JoystickInterface,
-        RgbSliderView.RgbSliderListener {
+        RgbSeekBar.RgbSeekBarListener {
     private static final String TAG = "MainActivity";
 
     // main players
@@ -53,7 +54,8 @@ public class MainActivity extends Activity implements
     Spinner ledMode;
     TextView maxSpeedPercentage;
     TextView battery;
-    RgbSliderView rgbView;
+    RgbSeekBar rgbBar;
+    TextView colorValue;
     LinearLayout ledColorContainer;
 
     @Override
@@ -95,7 +97,8 @@ public class MainActivity extends Activity implements
 
         maxSpeedBar = (SeekBar) findViewById(R.id.maxSpeedBar);
         ledMode = (Spinner) findViewById(R.id.ledMode);
-        rgbView = (RgbSliderView) findViewById(R.id.rgbSliders);
+        rgbBar = (RgbSeekBar) findViewById(R.id.rgbSeekBar);
+        colorValue = (TextView) findViewById(R.id.color_value);
         maxSpeedPercentage = (TextView) findViewById(R.id.maxSpeedPercentage);
         battery = (TextView) findViewById(R.id.battery);
 
@@ -177,6 +180,8 @@ public class MainActivity extends Activity implements
         final int prefLedMode = prefs.getInt("ledMode", 0);
         final int prefLedColor = prefs.getInt("ledColor", Color.GREEN);
 
+        updateColorPreview(prefLedColor);
+
         LedProcessor.LedMode savedLedMode = LedProcessor.LedMode.values()[prefLedMode];
         ledProcessor = new LedProcessor(sphero, savedLedMode, prefLedColor);
         joystickProcessor = new JoystickProcessor(sphero, JoystickProcessor.SpheroControlMode.SINGLE_STICK, this);
@@ -188,8 +193,7 @@ public class MainActivity extends Activity implements
                 maxSpeedBar.setOnSeekBarChangeListener(MainActivity.this);
                 ledMode.setOnItemSelectedListener(MainActivity.this);
 
-                rgbView.setOnColorChangeListener(MainActivity.this);
-                rgbView.setColor(prefLedColor);
+                rgbBar.setColorChangeListener(MainActivity.this);
             }
         });
     }
@@ -211,9 +215,6 @@ public class MainActivity extends Activity implements
 
         jsData.rX = ev.getAxisValue(MotionEvent.AXIS_Z);
         jsData.rY = ev.getAxisValue(MotionEvent.AXIS_RZ);
-
-        Log.d(TAG, String.format("joystick activity: lX: %f rX: %f lY: %f rY: %f",
-                jsData.lX, jsData.lY, jsData.rX, jsData.rY));
 
         return true;
     }
@@ -244,7 +245,8 @@ public class MainActivity extends Activity implements
         return mode == LedProcessor.LedMode.FADE_RGB ||
                 mode == LedProcessor.LedMode.STROBE_RANDOM ||
                 mode == LedProcessor.LedMode.BREATHE_RANDOM ||
-                mode == LedProcessor.LedMode.PULL_OVER;
+                mode == LedProcessor.LedMode.PULL_OVER ||
+                mode == LedProcessor.LedMode.OFF;
     }
 
     @Override
@@ -253,16 +255,38 @@ public class MainActivity extends Activity implements
     }
 
     @Override
-    public void onColorChanged(int newColor) {
-        prefs.edit().putInt("ledColor", newColor).apply();
-        if (ledProcessor != null) {
-            ledProcessor.setLedColor(newColor);
-        }
-    }
-
-    @Override
     public void onBackPressed() {
         disconnectFromSphero();
         finishAffinity();
+    }
+
+    @Override
+    public void onColorSelected(int color) {
+        updateColorPreview(color);
+
+        prefs.edit().putInt("ledColor", color).apply();
+        if (ledProcessor != null) {
+            ledProcessor.setLedColor(color);
+        }
+    }
+
+    private int getColorBrightness(int color) {
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+
+        return ((red * 299) + (green * 587) + (blue * 114)) / 1000;
+    }
+
+    private void updateColorPreview(int color) {
+        colorValue.setBackgroundColor(color);
+        colorValue.setText(String.format("#%02X%02X%02X",
+                Color.red(color), Color.green(color), Color.blue(color)));
+
+        if (getColorBrightness(color) < 125) {
+            colorValue.setTextColor(Color.WHITE);
+        } else {
+            colorValue.setTextColor(Color.BLACK);
+        }
     }
 }

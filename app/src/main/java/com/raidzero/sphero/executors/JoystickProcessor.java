@@ -70,7 +70,6 @@ public class JoystickProcessor {
                         }
 
                         if (leftStickMoving() || rightStickMoving()) {
-                            Log.d(TAG, "joystick motion. sending motor command");
                             sphero.rawMotor(getLeftPower(), getRightPower());
                             movementStopped = false;
                         } else {
@@ -87,8 +86,6 @@ public class JoystickProcessor {
                         int speedInt = (int) (getSpeed() * getMaxSpeed()); // restrict to half speed
                         if (leftStickMoving()) {
                             sphero.roll(speedInt, headingInt, aimInt);
-                            Log.d(TAG, String.format("rolling: speed: %d, heading: %d, aim: %d",
-                                    speedInt, headingInt, aimInt));
                             movementStopped = false;
                         } else {
                             if (!movementStopped) {

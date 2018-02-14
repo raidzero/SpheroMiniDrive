@@ -45,7 +45,6 @@ public class Sphero implements BtLe.BtLeListener {
     }
 
     private void useTheForce() {
-        Log.d(TAG, "useTheForce()");
         BtLeCommand command = BtLeCommand.createWriteCommand(
                 Constants.UUID_SERVICE_INITIALIZE,
                 Constants.UUID_CHARACTERISTIC_USETHEFORCE,
@@ -54,7 +53,6 @@ public class Sphero implements BtLe.BtLeListener {
     }
 
     private void subscribe() {
-        Log.d(TAG, "subscribe()");
         BtLeCommand command = BtLeCommand.createSubscribeCommand(Constants.UUID_SERVICE_INITIALIZE, UUID.fromString("00020002-574f-4f20-5370-6865726f2121"));
 
         mBtLe.addCommandToQueue(command);
@@ -66,12 +64,12 @@ public class Sphero implements BtLe.BtLeListener {
     }
 
     private void sendRead() {
-        Log.d(TAG, "sendRead()");
         mBtLe.addCommandToQueue(BtLeCommand.createReadCommand(Constants.UUID_SERVICE_INITIALIZE, UUID.fromString("00020004-574f-4f20-5370-6865726f2121")));
     }
 
     private void writeCommonOnes() {
         // magic numbers to initialize the sphero
+        // TODO: figure this out?
         sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x0d, (byte) 0x00, (byte) 0xd5, (byte) 0xd8});
         sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x13, (byte) 0x0d, (byte) 0x01, (byte) 0xd4, (byte) 0xd8});
         sendCommand(new byte[] {(byte) 0x8d, (byte) 0x0a, (byte) 0x11, (byte) 0x06, (byte) 0x04, (byte) 0xda, (byte) 0xd8});
@@ -105,18 +103,15 @@ public class Sphero implements BtLe.BtLeListener {
     }
 
     public void rearLed(boolean on) {
-        Log.d(TAG, "rearLed()");
         mBtLe.addCommandToQueueHead(BtLeCommand.createWriteCommand1c(SpheroCommand.createRearLedCommand(on)));
     }
 
     // left & right can be -4095 to 4095
     public void rawMotor(int left, int right) {
-        Log.d(TAG, String.format("rawMotor(%d, %d)", left, right));
         mBtLe.addCommandToQueueHead(BtLeCommand.createWriteCommand1c(SpheroCommand.createRawMotorCommand(left, right)));
     }
 
     public void roll(int speed, int heading, int aim) {
-        Log.d(TAG, "roll()");
         mBtLe.addCommandToQueueHead(BtLeCommand.createWriteCommand1c(SpheroCommand.createRollCommand(speed, heading, aim)));
     }
 

@@ -95,7 +95,7 @@ public class RgbSliderView extends LinearLayout implements SeekBar.OnSeekBarChan
             colorValue.setText(String.format("#%02X%02X%02X",
                     Color.red(color), Color.green(color), Color.blue(color)));
         } else {
-            colorValue.setText(getContext().getString(R.string.off));
+            //colorValue.setText(getContext().getString(R.string.off));
         }
 
         currentColor = color;

@@ -32,6 +32,7 @@ public class LedProcessor {
         STROBE,
         STROBE_RANDOM,
         PULL_OVER,
+        OFF,
     }
 
 
@@ -53,6 +54,7 @@ public class LedProcessor {
         boolean solidColorSet;
         boolean modeChanged = false;
         boolean colorChanged = false;
+        boolean ledAlreadyOff = false;
 
         @Override
         public void run() {
@@ -155,6 +157,13 @@ public class LedProcessor {
                         }
 
                         break;
+                    case OFF:
+                        if (!ledAlreadyOff) {
+                            sphero.mainLedRgb(Color.BLACK);
+                            ledAlreadyOff = true;
+                        }
+                        break;
+
 
                 }
             // end outer loop

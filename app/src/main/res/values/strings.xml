@@ -10,7 +10,7 @@
     <string name="label_led_mode">LED Mode</string>
     <string name="label_battery">Battery Level: </string>
     <string name="label_select_color">LED Color</string>
-    <string name="off">Off</string>
+    <string name="rgb_bar_hint">Touch to change color</string>
 
     <string-array name="ledModes">
         <item>RGB Fade</item>
@@ -20,5 +20,6 @@
         <item>Strobe</item>
         <item>Strobe Random</item>
         <item>Pull Over (Red &amp; Blue)</item>
+        <item>Off</item>
     </string-array>
 </resources>
