@@ -22,7 +22,6 @@ import com.raidzero.sphero.bluetooth.Sphero;
 import com.raidzero.sphero.executors.JoystickProcessor;
 import com.raidzero.sphero.executors.LedProcessor;
 import com.raidzero.sphero.view.RgbSeekBar;
-import com.raidzero.sphero.view.RgbSliderView;
 
 
 public class MainActivity extends Activity implements
@@ -36,7 +35,11 @@ public class MainActivity extends Activity implements
     // main players
     private BluetoothAdapter adapter;
     private Sphero sphero;
+
+    // from prefs
     private String savedSpheroAddress;
+    private int savedLedColor = Color.GREEN;
+    private int savedLedMode = 0;
 
     private static final int SCAN_ACTIVITY_REQUEST_CODE = 1000;
     SharedPreferences prefs;
@@ -90,6 +93,8 @@ public class MainActivity extends Activity implements
 
         prefs = getSharedPreferences("SpheroMiniDrive", Context.MODE_PRIVATE);
         savedSpheroAddress = prefs.getString("spheroAddress", null);
+        savedLedColor = prefs.getInt("ledColor", Color.GREEN);
+        savedLedMode = prefs.getInt("ledMode", LedProcessor.LedMode.FADE_RGB.ordinal());
 
         driveControls = (LinearLayout) findViewById(R.id.driveControls);
         connectingOverlay = (LinearLayout) findViewById(R.id.connectingDisplay);
@@ -177,13 +182,10 @@ public class MainActivity extends Activity implements
     private void init() {
         // turn off motor just in case
         sphero.roll(0, 0, 0);
-        final int prefLedMode = prefs.getInt("ledMode", 0);
-        final int prefLedColor = prefs.getInt("ledColor", Color.GREEN);
+        updateColorPreview(savedLedColor);
 
-        updateColorPreview(prefLedColor);
-
-        LedProcessor.LedMode savedLedMode = LedProcessor.LedMode.values()[prefLedMode];
-        ledProcessor = new LedProcessor(sphero, savedLedMode, prefLedColor);
+        LedProcessor.LedMode savedLedMode = LedProcessor.LedMode.values()[savedLedMode];
+        ledProcessor = new LedProcessor(sphero, savedLedMode, savedLedColor);
         joystickProcessor = new JoystickProcessor(sphero, JoystickProcessor.SpheroControlMode.SINGLE_STICK, this);
 
         runOnUiThread(new Runnable() {
@@ -270,23 +272,7 @@ public class MainActivity extends Activity implements
         }
     }
 
-    private int getColorBrightness(int color) {
-        int red = Color.red(color);
-        int green = Color.green(color);
-        int blue = Color.blue(color);
-
-        return ((red * 299) + (green * 587) + (blue * 114)) / 1000;
-    }
-
     private void updateColorPreview(int color) {
         colorValue.setBackgroundColor(color);
-        colorValue.setText(String.format("#%02X%02X%02X",
-                Color.red(color), Color.green(color), Color.blue(color)));
-
-        if (getColorBrightness(color) < 125) {
-            colorValue.setTextColor(Color.WHITE);
-        } else {
-            colorValue.setTextColor(Color.BLACK);
-        }
     }
 }
