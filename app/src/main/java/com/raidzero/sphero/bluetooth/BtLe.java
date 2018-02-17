@@ -42,6 +42,7 @@ public class BtLe {
 
     private BtLeListener mListener;
 
+
     public interface BtLeListener {
         void onServicesDiscoverySuccess();
         void onServicesDiscoveryFail();
@@ -52,7 +53,9 @@ public class BtLe {
     BtLe(Context context, BluetoothDevice device) {
         mContext = context;
         mDevice = device;
+    }
 
+    public void connect() {
         Log.d(TAG, "connecting gatt...");
         mGatt = mDevice.connectGatt(mContext, false, mGattCallback);
     }
@@ -192,15 +195,10 @@ public class BtLe {
 
             if (mConnected) {
                 // Discover services.
-                try {
-                    // wait 600 ms
-                    Thread.sleep(600);
-                } catch (Exception e) {
-
-                }
+                Log.d(TAG, "Discovering services...");
                 gatt.discoverServices();
             } else {
-
+                mListener.onServicesDiscoveryFail();
             }
         }
 

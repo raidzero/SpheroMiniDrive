@@ -112,6 +112,12 @@ public class MainActivity extends Activity implements
         maxSpeedPercentage.setText(String.valueOf((int) ((maxSpeed / 255.0) * 100)) + "%");
         jsData.maxSpeed = maxSpeed;
         adapter = BluetoothAdapter.getDefaultAdapter();
+
+        if (hideColorSelectorForMode(LedProcessor.LedMode.values()[savedLedMode])) {
+            ledColorContainer.setVisibility(View.GONE);
+        } else {
+            ledColorContainer.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -184,14 +190,14 @@ public class MainActivity extends Activity implements
         sphero.roll(0, 0, 0);
         updateColorPreview(savedLedColor);
 
-        LedProcessor.LedMode savedLedMode = LedProcessor.LedMode.values()[savedLedMode];
-        ledProcessor = new LedProcessor(sphero, savedLedMode, savedLedColor);
+        LedProcessor.LedMode ledModeValue = LedProcessor.LedMode.values()[savedLedMode];
+        ledProcessor = new LedProcessor(sphero, ledModeValue, savedLedColor);
         joystickProcessor = new JoystickProcessor(sphero, JoystickProcessor.SpheroControlMode.SINGLE_STICK, this);
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ledMode.setSelection(prefLedMode);
+                ledMode.setSelection(savedLedMode);
                 maxSpeedBar.setOnSeekBarChangeListener(MainActivity.this);
                 ledMode.setOnItemSelectedListener(MainActivity.this);
 

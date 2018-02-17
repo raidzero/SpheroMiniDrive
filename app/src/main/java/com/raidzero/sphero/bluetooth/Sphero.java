@@ -27,6 +27,9 @@ public class Sphero implements BtLe.BtLeListener {
 
     private int batteryLevel = -1;
 
+    private int failedConnectCount = 0;
+    private static final int MAX_FAILED_CONNECTION_ATTEMPTS = 3;
+
     public interface SpheroListener {
         void onSpheroConnected();
         void onSpheroDisconnected();
@@ -38,6 +41,9 @@ public class Sphero implements BtLe.BtLeListener {
         mListener = listener;
         mBtLe = new BtLe(context, device);
         mBtLe.setListener(this);
+
+        Log.d(TAG, "connecting...");
+        mBtLe.connect();
     }
 
     public String getName() {
@@ -159,6 +165,15 @@ public class Sphero implements BtLe.BtLeListener {
     @Override
     public void onServicesDiscoveryFail() {
         mServicesReadyForUse = false;
+        failedConnectCount++;
+
+        if (failedConnectCount < MAX_FAILED_CONNECTION_ATTEMPTS) {
+            Log.d(TAG, "failed to discover services. retrying...");
+            mBtLe.connect();
+        } else {
+            Log.e(TAG, "Could not connect after " + failedConnectCount + "  attempts...");
+        }
+
     }
 
     @Override
