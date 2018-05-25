@@ -4,14 +4,25 @@ android {
     compileSdkVersion 19
     buildToolsVersion '26.0.2'
 
+    signingConfigs {
+        raidzero {
+            keyAlias KEY_ALIAS
+            keyPassword KEY_PASSWORD
+            storeFile file(STORE_FILE)
+            storePassword STORE_PASSWORD
+        }
+    }
+
     defaultConfig {
         minSdkVersion 18
         targetSdkVersion 19
         versionCode 1
         versionName "1.0"
     }
+
     buildTypes {
         release {
+            signingConfig signingConfigs.raidzero
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
