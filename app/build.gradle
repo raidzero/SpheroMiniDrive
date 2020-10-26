@@ -1,34 +1,35 @@
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 30
+    buildToolsVersion '30.0.2'
 
-    signingConfigs {
-        raidzero {
-            keyAlias KEY_ALIAS
-            keyPassword KEY_PASSWORD
-            storeFile file(STORE_FILE)
-            storePassword STORE_PASSWORD
-        }
-    }
+//    signingConfigs {
+//        raidzero {
+//            keyAlias KEY_ALIAS
+//            keyPassword KEY_PASSWORD
+//            storeFile file(STORE_FILE)
+//            storePassword STORE_PASSWORD
+//        }
+//    }
 
     defaultConfig {
-        minSdkVersion 18
-        targetSdkVersion 19
+        minSdkVersion 26
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
     }
 
     buildTypes {
-        release {
-            signingConfig signingConfigs.raidzero
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-        }
+//        release {
+//            signingConfig signingConfigs.raidzero
+//            minifyEnabled false
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+//        }
     }
 }
 
 dependencies {
+    implementation 'com.android.support:appcompat-v7:28.0.0'
     compile fileTree(include: ['*.jar'], dir: 'libs')
 }

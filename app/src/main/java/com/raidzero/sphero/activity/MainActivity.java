@@ -278,7 +278,12 @@ public class MainActivity extends Activity implements
         }
     }
 
-    private void updateColorPreview(int color) {
-        colorValue.setBackgroundColor(color);
+    private void updateColorPreview(final int color) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                colorValue.setBackgroundColor(color);
+            }
+        });
     }
 }

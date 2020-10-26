@@ -1,13 +1,17 @@
 package com.raidzero.sphero.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.raidzero.sphero.global.Constants;
@@ -22,7 +26,7 @@ import java.util.UUID;
  * Created by raidzero on 2/10/18.
  */
 
-public class ScanActivity extends Activity implements BluetoothAdapter.LeScanCallback {
+public class ScanActivity extends AppCompatActivity implements BluetoothAdapter.LeScanCallback {
     private static final String TAG = "ScanActivity";
 
     private BluetoothAdapter mBtAdapter;
@@ -46,25 +50,36 @@ public class ScanActivity extends Activity implements BluetoothAdapter.LeScanCal
         prefs = getSharedPreferences("SpheroMiniDrive", Context.MODE_PRIVATE);
 
         if (prefs.getString("spheroAddress", null) == null) {
-            startScanningForSpheros();
+            checkPermission();
         } else {
             startActivity(new Intent(this, MainActivity.class));
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        startScanningForSpheros();
+    }
+
+    private void checkPermission() {
+        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION};
+        requestPermissions(permissions, 1000);
+    }
+
     private void startScanningForSpheros() {
         // stop scanning after five seconds
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mScanning) {
-                    mBtAdapter.stopLeScan(ScanActivity.this);
-
-                    setResult(RESULT_CANCELED);
-                    finish();
-                }
-            }
-        }, SCAN_PERIOD);
+//        mHandler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (mScanning) {
+//                    mBtAdapter.stopLeScan(ScanActivity.this);
+//
+//                    setResult(RESULT_CANCELED);
+//                    finish();
+//                }
+//            }
+//        }, SCAN_PERIOD);
 
         mScanning = true;
         mBtAdapter.startLeScan(this);
